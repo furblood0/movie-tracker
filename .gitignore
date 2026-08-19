@@ -1,0 +1,14 @@
+# Ortam degiskenleri (TMDb anahtari burada durur, asla commit edilmez)
+.env
+
+# SQLite veritabani dosyalari
+data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Isletim sistemi / editor artiklari
+.DS_Store
+Thumbs.db
+node_modules/

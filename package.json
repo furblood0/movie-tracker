@@ -1,0 +1,21 @@
+{
+  "name": "movie-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vanilla JS + native Node.js ile yazilmis Film/Dizi Gunlugu uygulamasi (harici bagimlilik yok)",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:reset": "node src/db/reset.js",
+    "test:auth": "node scripts/test-auth.mjs",
+    "test:tmdb": "node scripts/test-tmdb.mjs",
+    "test:entries": "node scripts/test-entries.mjs",
+    "check:frontend": "node scripts/check-frontend.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
