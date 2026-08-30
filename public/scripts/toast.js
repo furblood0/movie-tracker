@@ -46,6 +46,6 @@ export function showToast(message, type = 'info', durationMs = DEFAULT_DURATION_
 
 /** Hata nesnesini kullaniciya uygun mesajla gosterir. */
 export function showApiError(error) {
-  const message = error?.message ?? 'Beklenmeyen bir hata olustu.';
+  const message = error?.message ?? 'Beklenmeyen bir hata oluştu.';
   showToast(message, 'error', 5000);
 }

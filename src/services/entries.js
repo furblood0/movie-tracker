@@ -152,7 +152,7 @@ export function createEntry(userId, input) {
   const existing = selectEntryByTmdbStatement.get(userId, input.mediaType, input.tmdbId);
   if (existing) {
     // Arayuz bu id ile dogrudan duzenleme moduna gecebilsin diye geri veriyoruz.
-    throw new HttpError(409, 'Bu icerik gunlugunuzde zaten var.', {
+    throw new HttpError(409, 'Bu içerik günlüğünüzde zaten var.', {
       field: 'tmdbId',
       existingEntryId: existing.id,
     });
@@ -204,7 +204,7 @@ export function findEntry(userId, entryId) {
  */
 export function updateEntry(userId, entryId, changes) {
   const existing = selectEntryByIdStatement.get(entryId, userId);
-  if (!existing) throw new HttpError(404, 'Kayit bulunamadi.');
+  if (!existing) throw new HttpError(404, 'Kayıt bulunamadı.');
 
   // Istemciden gelen alan adi -> veritabani kolonu eslesmesi (beyaz liste)
   const COLUMN_MAP = {

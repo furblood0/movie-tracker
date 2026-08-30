@@ -2,7 +2,13 @@
    Movie Tracker - stil sayfasi
    Saf CSS3: ozel ozellikler (degiskenler), Grid, Flexbox, clamp() ile
    akiskan tipografi ve mobil-oncelikli duyarli tasarim.
+
+   Tema: "Sinema Salonu" - notr komur zemin, tek vurgu olarak sicak altin,
+   editoryal serif basliklar, kunye hissi veren monospace etiketler ve
+   bilet kocani formunda kartlar.
+
    Bolumler:
+     0. Yazi tipleri
      1. Tasarim degiskenleri
      2. Sifirlama ve temel ogeler
      3. Ust bar / gezinme
@@ -17,36 +23,110 @@
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
+   0. Yazi tipleri (kendi sunucumuzdan; harici istek yok)
+
+   Instrument Serif -> baslik/afis tipografisi, Inter -> arayuz metni.
+   Ikisi de SIL Open Font License 1.1 ile dagitilir. Turkce icin latin-ext
+   dilimi sart (g-breve, s-cedilla, noktali I).
+   --------------------------------------------------------------------- */
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/instrument-serif-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/instrument-serif-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/instrument-serif-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/instrument-serif-italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/assets/fonts/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/assets/fonts/inter-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ---------------------------------------------------------------------
    1. Tasarim degiskenleri
+
+   Tema: "Sinema Salonu". Afisler zaten doygun renklidir; arayuz notr
+   komurde kalir ve tek vurgu rengi olarak sicak altin kullanilir. Boylece
+   ekrandaki tek renk kaynagi icerigin kendisi olur.
    --------------------------------------------------------------------- */
 :root {
-  /* Yuzeyler */
-  --color-bg: #0b0f16;
-  --color-surface: #131924;
-  --color-surface-2: #1a2231;
-  --color-surface-3: #222c3d;
-  --color-border: #26303f;
-  --color-border-strong: #35425a;
+  /* Yuzeyler - mavi tonu yok, hafif sicak notr */
+  --color-bg: #08090b;
+  --color-surface: #101114;
+  --color-surface-2: #17181d;
+  --color-surface-3: #212227;
+  --color-border: #24262c;
+  --color-border-strong: #35373f;
 
-  /* Metin */
-  --color-text: #e8eef7;
-  --color-text-muted: #93a1b5;
-  --color-text-faint: #6b7889;
+  /* Metin - sicak kirik beyaz */
+  --color-text: #f2efe9;
+  --color-text-muted: #a3a09a;
+  --color-text-faint: #6f6d68;
 
   /* Vurgular */
-  --color-primary: #5b8def;
-  --color-primary-strong: #3f74e0;
-  --color-primary-soft: rgb(91 141 239 / 14%);
-  --color-star: #f5c518;
-  --color-success: #3fb950;
+  --color-primary: #e8b84b;
+  --color-primary-strong: #f2c964;
+  --color-primary-soft: rgb(232 184 75 / 12%);
+  --color-on-primary: #17140b;
+  --color-star: #e8b84b;
+  --color-star-empty: #2e2c27;
+  --color-success: #7fa87f;
   --color-warning: #d29922;
-  --color-danger: #f85149;
-  --color-danger-soft: rgb(248 81 73 / 14%);
+  --color-danger: #d9534f;
+  --color-danger-soft: rgb(217 83 79 / 14%);
+  --color-favorite: #e0524f;
 
-  /* Durum renkleri (izleme durumu rozetleri) */
-  --color-watched: #3fb950;
-  --color-watchlist: #58a6ff;
-  --color-dropped: #8b949e;
+  /* Durum renkleri: altin one ciksin diye bilincli olarak dusuk doygunluk */
+  --color-watched: #7fa87f;
+  --color-watchlist: #8aa0c4;
+  --color-dropped: #7a7873;
 
   /* Olcek */
   --space-1: 0.25rem;
@@ -57,20 +137,32 @@
   --space-6: 2rem;
   --space-7: 3rem;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  /* Baski hissi icin kucuk yaricaplar */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
-  --shadow-md: 0 8px 24px rgb(0 0 0 / 35%);
-  --shadow-lg: 0 24px 60px rgb(0 0 0 / 55%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-md: 0 10px 30px rgb(0 0 0 / 50%);
+  --shadow-lg: 0 28px 70px rgb(0 0 0 / 65%);
 
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
   --transition: 160ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  --app-bar-height: 60px;
+  --app-bar-height: 64px;
   --content-width: 1240px;
+}
+
+/* Kucuk, harfi aralikli, buyuk harf etiket: jenerik/kunye hissi verir */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* ---------------------------------------------------------------------
@@ -94,9 +186,32 @@ body {
   line-height: 1.5;
   color: var(--color-text);
   background-color: var(--color-bg);
-  /* Ust kosede yumusak bir isik: derinlik hissi verir */
-  background-image: radial-gradient(1100px 520px at 15% -8%, #16233c 0%, transparent 62%);
+  /* Perde ustunden dusen soluk projeksiyon isigi */
+  background-image: radial-gradient(1200px 560px at 50% -14%, rgb(232 184 75 / 7%) 0%, transparent 68%),
+    radial-gradient(900px 480px at 108% 4%, rgb(150 110 70 / 6%) 0%, transparent 62%);
   background-attachment: fixed;
+}
+
+/* Film greni: tek bir SVG gurultu dokusu, tum ekrana serilir. Ayri bir
+   gorsel dosyasi gerekmez, CSP'deki `img-src ... data:` izniyle calisir. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+}
+
+/* Kenarlara dogru koyulasan vinyet: bakisi ekranin ortasina toplar */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(130% 100% at 50% 38%, transparent 60%, rgb(0 0 0 / 38%) 100%);
 }
 
 h1,
@@ -106,6 +221,13 @@ h4 {
   margin: 0;
   line-height: 1.25;
   letter-spacing: -0.015em;
+}
+
+/* Baslik tipografisi: display serif, tek agirlikta (400) tasarlanmistir */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 p {
@@ -157,7 +279,7 @@ a:hover {
   z-index: 100;
   padding: var(--space-2) var(--space-4);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   border-radius: var(--radius-sm);
   transition: top var(--transition);
 }
@@ -183,8 +305,8 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgb(11 15 22 / 82%);
-  backdrop-filter: blur(12px);
+  background: rgb(8 9 11 / 78%);
+  backdrop-filter: blur(14px) saturate(120%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -205,9 +327,10 @@ a:hover {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: var(--color-text);
-  font-size: 1.05rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
   white-space: nowrap;
 }
 
@@ -215,46 +338,64 @@ a:hover {
   text-decoration: none;
 }
 
+/* Bilet kocani ikonu: kart tasariminda tekrarlanan motifin kucuk hali */
 .brand__mark {
-  width: 26px;
-  height: 26px;
-  fill: var(--color-star);
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.brand__mark-perf {
+  stroke-dasharray: 2 3;
+  stroke-linecap: round;
+  opacity: 0.7;
 }
 
 .brand__text strong {
   color: var(--color-primary);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .app-nav {
   display: flex;
   gap: var(--space-1);
-  padding: var(--space-1);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
 }
 
 .app-nav__link {
-  padding: var(--space-2) var(--space-4);
-  font-size: 0.9rem;
+  position: relative;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.83rem;
+  font-family: var(--font-mono);
   font-weight: 500;
-  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: background var(--transition), color var(--transition);
+  transition: color var(--transition);
 }
 
 .app-nav__link:hover {
   color: var(--color-text);
-  background: var(--color-surface-2);
 }
 
+/* Aktif sekme: dolgu yerine ince altin cizgi - daha sakin, daha editoryal */
 .app-nav__link.is-active {
-  color: #fff;
+  color: var(--color-primary);
+}
+
+.app-nav__link.is-active::after {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: 0;
+  height: 1px;
   background: var(--color-primary);
 }
 
@@ -280,8 +421,8 @@ a:hover {
   height: 34px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  color: var(--color-on-primary);
+  background: linear-gradient(140deg, #f2c964, #c9903a);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -320,7 +461,8 @@ a:hover {
 }
 
 .btn--primary {
-  color: #fff;
+  color: var(--color-on-primary);
+  font-weight: 600;
   background: var(--color-primary);
   border-color: var(--color-primary);
 }
@@ -365,8 +507,9 @@ a:hover {
 .btn__spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgb(255 255 255 / 35%);
-  border-top-color: #fff;
+  /* currentColor: altin dolgulu butonda koyu, koyu butonda acik gorunur */
+  border: 2px solid currentColor;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 700ms linear infinite;
 }
@@ -486,7 +629,8 @@ a:hover {
 }
 
 .segmented__option input:checked + .segmented__label {
-  color: #fff;
+  color: var(--color-on-primary);
+  font-weight: 600;
   background: var(--color-primary);
 }
 
@@ -535,15 +679,25 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin-bottom: var(--space-2);
-  font-size: 1.4rem;
+  font-family: var(--font-display);
+  font-size: 1.9rem;
 }
 
 .auth__brand svg {
-  width: 30px;
-  height: 30px;
-  fill: var(--color-star);
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.auth__brand .brand__mark-perf {
+  stroke-dasharray: 2 3;
+  stroke-linecap: round;
+  opacity: 0.7;
 }
 
 .auth__tagline {
@@ -576,7 +730,8 @@ a:hover {
 }
 
 .auth__tab.is-active {
-  color: #fff;
+  color: var(--color-on-primary);
+  font-weight: 600;
   background: var(--color-primary);
 }
 
@@ -603,15 +758,28 @@ a:hover {
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+/* Baslik ustundeki kucuk altin kunye satiri */
+.page-head__eyebrow {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+  opacity: 0.85;
 }
 
 .page-head__title {
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
 }
 
 .page-head__subtitle {
-  font-size: 0.92rem;
+  margin-top: var(--space-2);
+  font-size: 0.9rem;
   color: var(--color-text-muted);
 }
 
@@ -621,14 +789,14 @@ a:hover {
   gap: var(--space-2);
 }
 
+/* Filtreler: kutu degil, ince bir arac cubugu. Eskiden bir kart icinde iki
+   satir kaplayip afisleri asagi itiyordu. */
 .filters {
   display: grid;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  gap: var(--space-3);
+  padding: 0 0 var(--space-3);
   margin-bottom: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .filters__row {
@@ -638,58 +806,112 @@ a:hover {
   align-items: center;
 }
 
-/* Durum sekmeleri: kaydirilabilir cip listesi */
+.filters__row--meta {
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Durum secimi: dolgu yerine altta altin cizgi tasiyan metin sekmeleri */
 .chips {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
   overflow-x: auto;
-  padding-bottom: var(--space-1);
   scrollbar-width: thin;
 }
 
 .chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.4rem 0.85rem;
-  font-size: 0.87rem;
-  color: var(--color-text-muted);
-  background: var(--color-surface-2);
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  background: transparent;
+  border: 0;
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  transition: color var(--transition);
 }
 
 .chip:hover {
   color: var(--color-text);
-  border-color: var(--color-border-strong);
 }
 
 .chip.is-active {
-  color: #fff;
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
+.chip.is-active::after {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: 0;
+  height: 1px;
+  background: var(--color-primary);
+}
+
+/* Acilir menuler: cerceve yok, sadece metin + ok. Arac cubugunu hafifletir. */
 .filters__group {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-faint);
 }
 
-.filters__group .select,
-.filters__group .input {
+.filters__group > span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.filters__group .select {
   width: auto;
-  min-width: 130px;
+  min-width: 0;
+  padding: 0.35rem 1.6rem 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  background-color: transparent;
+  border-color: transparent;
+  background-position: calc(100% - 12px) center, calc(100% - 7px) center;
+}
+
+.filters__group .select:hover {
+  background-color: var(--color-surface-2);
 }
 
 .filters__search {
   flex: 1 1 220px;
   min-width: 180px;
+  max-width: 320px;
+  padding-block: 0.45rem;
+  background: var(--color-surface);
+}
+
+.filters .btn--ghost {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.filters .btn--icon {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-muted);
+}
+
+.filters .btn--icon:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
 }
 
 /* ---------------------------------------------------------------------
@@ -698,8 +920,8 @@ a:hover {
 .card-grid {
   display: grid;
   /* Ekran genisligine gore kolon sayisi kendini ayarlar */
-  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  gap: var(--space-5) var(--space-4);
 }
 
 .card {
@@ -714,8 +936,8 @@ a:hover {
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-border-strong);
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-primary) 32%, var(--color-border));
   box-shadow: var(--shadow-md);
 }
 
@@ -730,6 +952,21 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.card:hover .card__poster img {
+  transform: scale(1.045);
+}
+
+/* Afisin altina inen karartma: uzerine yazilan puan her afiste okunur kalir */
+.card__poster::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 46%;
+  background: linear-gradient(to top, rgb(8 9 11 / 90%), rgb(8 9 11 / 45%) 45%, transparent);
+  pointer-events: none;
 }
 
 /* Afisi olmayan icerikler icin bas harf yer tutucusu */
@@ -738,22 +975,117 @@ a:hover {
   place-items: center;
   height: 100%;
   padding: var(--space-3);
-  font-size: 2rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 3rem;
   color: var(--color-text-faint);
+}
+
+/* Afis ustu, ust satir: izleme durumu */
+.card__flags {
+  position: absolute;
+  inset: var(--space-2) var(--space-2) auto;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.5rem;
+  color: var(--color-text);
+  background: rgb(8 9 11 / 68%);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius-sm);
+}
+
+.card__status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-color, var(--color-text-faint));
+}
+
+.card__status[data-status="watched"] {
+  --status-color: var(--color-watched);
+}
+
+.card__status[data-status="watchlist"] {
+  --status-color: var(--color-watchlist);
+}
+
+.card__status[data-status="dropped"] {
+  --status-color: var(--color-dropped);
+}
+
+/* Afis ustu, alt satir: puan (tek yerde) ve icerik turu */
+.card__poster-foot {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.card__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22rem;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--color-primary);
+  text-shadow: 0 1px 8px rgb(0 0 0 / 80%);
+}
+
+.card__score-mark {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  opacity: 0.85;
+}
+
+.card__type {
+  margin-left: auto;
+  color: rgb(242 239 233 / 62%);
+  text-shadow: 0 1px 6px rgb(0 0 0 / 80%);
+}
+
+.card__favorite {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+  color: var(--color-favorite);
+  background: rgb(8 9 11 / 68%);
+  backdrop-filter: blur(6px);
+  border-radius: 50%;
 }
 
 .card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-3);
   flex: 1;
 }
 
 .card__title {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.15;
+  letter-spacing: 0;
   /* Uzun basliklar iki satirda kesilir */
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -765,34 +1097,96 @@ a:hover {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 0.78rem;
   color: var(--color-text-faint);
 }
 
 .card__genres {
-  font-size: 0.75rem;
+  margin-top: var(--space-1);
+  font-size: 0.78rem;
   color: var(--color-text-faint);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Kullanici notu: gunluge el yazisiyla dusulmus his versin diye italik serif */
 .card__review {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+  font-family: var(--font-display);
   font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Bilet kocani: kartin altindaki koparma seridi. Delik izleri, kartin
+   `overflow: hidden` siniriyla kirpilan yarim dairelerdir. */
+.card__stub {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: var(--space-2) var(--space-3);
+  background: rgb(255 255 255 / 2.5%);
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+.card__stub::before,
+.card__stub::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 15px;
+  height: 15px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.card__stub::before {
+  left: -8px;
+}
+
+.card__stub::after {
+  right: -8px;
+}
+
+.card__stub-date {
+  color: var(--color-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__stub-action {
+  flex-shrink: 0;
+  padding: 0.2rem 0.4rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+
+.card__stub-action:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+/* Kesfet ekranindaki sonuc kartlari halen rozet + dugme duzenini kullanir */
 .card__footer {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   margin-top: auto;
-  padding-top: var(--space-2);
+  padding-top: var(--space-3);
 }
 
 .card__footer .btn {
@@ -801,10 +1195,10 @@ a:hover {
   font-size: 0.82rem;
 }
 
-/* Poster uzerindeki rozetler */
 .card__badges {
   position: absolute;
   inset: var(--space-2) var(--space-2) auto;
+  z-index: 2;
   display: flex;
   gap: var(--space-1);
   flex-wrap: wrap;
@@ -814,51 +1208,37 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #fff;
-  background: rgb(0 0 0 / 65%);
-  backdrop-filter: blur(4px);
-  border-radius: var(--radius-pill);
+  padding: 0.18rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  background: rgb(8 9 11 / 68%);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius-sm);
 }
 
 .badge--watched {
-  background: color-mix(in srgb, var(--color-watched) 82%, black);
+  color: var(--color-watched);
 }
 
 .badge--watchlist {
-  background: color-mix(in srgb, var(--color-watchlist) 82%, black);
+  color: var(--color-watchlist);
 }
 
 .badge--dropped {
-  background: color-mix(in srgb, var(--color-dropped) 78%, black);
+  color: var(--color-dropped);
 }
 
 .badge--type {
-  background: rgb(0 0 0 / 70%);
-  color: var(--color-text);
+  color: rgb(242 239 233 / 62%);
 }
 
 .badge--score {
   gap: 0.2rem;
-  color: #0b0f16;
-  background: var(--color-star);
-}
-
-.card__favorite {
-  position: absolute;
-  right: var(--space-2);
-  bottom: var(--space-2);
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  font-size: 0.9rem;
-  color: var(--color-danger);
-  background: rgb(0 0 0 / 60%);
-  border-radius: 50%;
+  color: var(--color-primary);
 }
 
 /* ---------------------------------------------------------------------
@@ -876,7 +1256,7 @@ a:hover {
 }
 
 .stars__base {
-  color: var(--color-surface-3);
+  color: var(--color-star-empty);
   letter-spacing: 1px;
 }
 
@@ -940,7 +1320,7 @@ a:hover {
   place-items: center;
   font-size: 1.5rem;
   line-height: 1;
-  color: var(--color-surface-3);
+  color: var(--color-star-empty);
   pointer-events: none;
   transition: color var(--transition), transform var(--transition);
 }
@@ -951,7 +1331,7 @@ a:hover {
 }
 
 .rating__star.is-half .rating__glyph {
-  background: linear-gradient(90deg, var(--color-star) 50%, var(--color-surface-3) 50%);
+  background: linear-gradient(90deg, var(--color-star) 50%, var(--color-star-empty) 50%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1032,7 +1412,9 @@ a:hover {
 }
 
 .modal__title {
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.5rem;
 }
 
 .modal__subtitle {
@@ -1182,7 +1564,9 @@ a:hover {
 }
 
 .empty-state__title {
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.6rem;
 }
 
 .empty-state__text {
@@ -1240,14 +1624,16 @@ a:hover {
 }
 
 .pagination__info {
-  font-size: 0.88rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .result-count {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
+  margin-left: auto;
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Bolum basligi (Kesfet: one cikanlar / arama sonuclari) */
@@ -1259,7 +1645,9 @@ a:hover {
 }
 
 .section-head__title {
-  font-size: 1.15rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.7rem;
 }
 
 /* ---------------------------------------------------------------------

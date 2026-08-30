@@ -107,9 +107,9 @@ export function formatRating(rating) {
 
 /** Izleme durumu -> Turkce etiket */
 export const STATUS_LABELS = {
-  watched: 'Izlendi',
-  watchlist: 'Izlenecek',
-  dropped: 'Birakildi',
+  watched: 'İzlendi',
+  watchlist: 'İzlenecek',
+  dropped: 'Bırakıldı',
 };
 
 /** Icerik turu -> Turkce etiket */

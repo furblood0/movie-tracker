@@ -42,6 +42,8 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 ├── public/                 # İstemci tarafı (statik olarak sunulur)
 │   ├── index.html          # Uygulama kabuğu (içerik JS ile üretilir)
 │   ├── assets/
+│   │   ├── favicon.svg
+│   │   └── fonts/          # Kendi sunucumuzdan servis edilen woff2'ler (OFL 1.1)
 │   ├── styles/main.css     # Tek stil dosyası (CSS değişkenleri + Grid/Flex)
 │   └── scripts/            # ES module'ler
 │       ├── app.js          # Önyükleyici: oturum kontrolü, görünüm geçişleri
@@ -172,6 +174,24 @@ npm run check:frontend
 ```
 
 ## Arayüz
+
+### Tema: "Sinema Salonu"
+
+Afişler zaten doygun renklidir, bu yüzden arayüz nötr kömür tonlarında kalır ve
+tek vurgu rengi olarak sıcak altın (`#e8b84b`) kullanılır — ekrandaki tek renk
+kaynağı içeriğin kendisi olur.
+
+- **Tipografi:** başlıklarda Instrument Serif, arayüz metninde Inter, künye
+  etiketlerinde (durum, tür, tarih) sistem monospace. Fontlar `public/assets/fonts`
+  altından kendi sunucumuzca servis edilir; harici istek ve npm paketi yoktur.
+- **Doku:** tek bir SVG `feTurbulence` data-URI'siyle üretilen film greni ve
+  ekran kenarlarını koyulaştıran vinyet.
+- **Kartlar:** bilet koçanı formunda — alt şeritte izleme tarihi, koparma
+  çizgisinde kartın `overflow` sınırıyla kırpılan yarım daire delik izleri.
+- **Renk değişkenleri:** tema tamamen `:root` altındaki değişkenlerden beslenir,
+  başka bir palete geçmek için tek blok yeterlidir.
+
+### Ekranlar
 
 - **Giriş / Kayıt:** tek kartta sekmeli form; sunucudan gelen alan bazlı hatalar ilgili alanın altına yazılır
 - **Günlüğüm:** durum çipleri, tür/kategori/puan/sıralama menüleri, metin arama, sayfalama

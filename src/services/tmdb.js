@@ -67,7 +67,7 @@ function writeCache(cacheKey, value) {
  */
 async function requestTmdb(endpoint, params = {}) {
   if (!hasTmdbCredentials()) {
-    throw new HttpError(503, 'TMDb API anahtari sunucuda tanimli degil. .env dosyasini doldurun.');
+    throw new HttpError(503, 'TMDb API anahtarı sunucuda tanımlı değil. .env dosyasını doldurun.');
   }
 
   const url = new URL(config.tmdb.baseUrl + endpoint);
@@ -89,7 +89,7 @@ async function requestTmdb(endpoint, params = {}) {
     // Ag hatasi / zaman asimi: kendi hatamiz degil, yukari 504 olarak bildir.
     // Not: hata mesajinda URL yok -> anahtar loglara sizmaz.
     logger.warn(`TMDb istegi basarisiz (${endpoint}): ${error.name}`);
-    throw new HttpError(504, 'TMDb servisine su anda ulasilamiyor. Lutfen tekrar deneyin.');
+    throw new HttpError(504, 'TMDb servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
   }
 
   if (response.ok) return response.json();
@@ -105,14 +105,14 @@ async function requestTmdb(endpoint, params = {}) {
 
   logger.warn(`TMDb ${response.status} (${endpoint}): ${tmdbMessage}`);
 
-  if (response.status === 404) throw new HttpError(404, 'TMDb uzerinde boyle bir icerik bulunamadi.');
+  if (response.status === 404) throw new HttpError(404, 'TMDb üzerinde böyle bir içerik bulunamadı.');
   if (response.status === 401 || response.status === 403) {
     // Yapilandirma hatasi kullaniciya "anahtar gecersiz" olarak sizdirilmaz.
-    throw new HttpError(502, 'TMDb kimlik dogrulamasi basarisiz. Sunucu yapilandirmasini kontrol edin.');
+    throw new HttpError(502, 'TMDb kimlik doğrulaması başarısız. Sunucu yapılandırmasını kontrol edin.');
   }
-  if (response.status === 429) throw new HttpError(429, 'TMDb istek siniri asildi. Kisa bir sure sonra deneyin.');
+  if (response.status === 429) throw new HttpError(429, 'TMDb istek sınırı aşıldı. Kısa bir süre sonra deneyin.');
 
-  throw new HttpError(502, 'TMDb beklenmeyen bir yanit dondurdu.');
+  throw new HttpError(502, 'TMDb beklenmeyen bir yanıt döndürdü.');
 }
 
 /**

@@ -11,19 +11,19 @@ import { clear, debounce, el } from './dom.js';
 import { openEntryForm } from './entry-form.js';
 
 const STATUS_FILTERS = [
-  { value: '', label: 'Tumu' },
-  { value: 'watched', label: 'Izlendi' },
-  { value: 'watchlist', label: 'Izlenecek' },
-  { value: 'dropped', label: 'Birakildi' },
+  { value: '', label: 'Tümü' },
+  { value: 'watched', label: 'İzlendi' },
+  { value: 'watchlist', label: 'İzlenecek' },
+  { value: 'dropped', label: 'Bırakıldı' },
 ];
 
 const SORT_OPTIONS = [
-  { value: 'updated', label: 'Son guncellenen' },
+  { value: 'updated', label: 'Son güncellenen' },
   { value: 'created', label: 'Eklenme tarihi' },
   { value: 'rating', label: 'Puan' },
-  { value: 'watched', label: 'Izleme tarihi' },
-  { value: 'title', label: 'Baslik' },
-  { value: 'year', label: 'Yapim yili' },
+  { value: 'watched', label: 'İzleme tarihi' },
+  { value: 'title', label: 'Başlık' },
+  { value: 'year', label: 'Yapım yılı' },
 ];
 
 /**
@@ -47,11 +47,11 @@ export function createLibraryView({ onNavigateDiscover }) {
   };
 
   const grid = el('div', { class: 'card-grid' });
-  const resultCount = el('p', { class: 'result-count', 'aria-live': 'polite' });
+  const resultCount = el('p', { class: 'result-count label-mono', 'aria-live': 'polite' });
   const paginationHost = el('div');
 
   // --- Durum cipleri ---
-  const chipRow = el('div', { class: 'chips', role: 'group', 'aria-label': 'Duruma gore filtrele' });
+  const chipRow = el('div', { class: 'chips', role: 'group', 'aria-label': 'Duruma göre filtrele' });
   const chipButtons = STATUS_FILTERS.map((filter) => {
     const chip = el('button', {
       type: 'button',
@@ -70,7 +70,7 @@ export function createLibraryView({ onNavigateDiscover }) {
   });
 
   // --- Acilir menuler ---
-  const mediaTypeSelect = createSelect('Tur', [
+  const mediaTypeSelect = createSelect('Tür', [
     { value: '', label: 'Film + Dizi' },
     { value: 'movie', label: 'Sadece film' },
     { value: 'tv', label: 'Sadece dizi' },
@@ -79,7 +79,7 @@ export function createLibraryView({ onNavigateDiscover }) {
     resetAndLoad();
   });
 
-  const genreSelect = createSelect('Kategori', [{ value: '', label: 'Tum kategoriler' }], (value) => {
+  const genreSelect = createSelect('Kategori', [{ value: '', label: 'Tüm kategoriler' }], (value) => {
     state.genreId = value;
     resetAndLoad();
   });
@@ -92,7 +92,7 @@ export function createLibraryView({ onNavigateDiscover }) {
   });
 
   const sortSelect = createSelect(
-    'Sirala',
+    'Sırala',
     SORT_OPTIONS.map((option) => ({ value: option.value, label: option.label })),
     (value) => {
       state.sort = value;
@@ -103,8 +103,8 @@ export function createLibraryView({ onNavigateDiscover }) {
   const orderButton = el('button', {
     type: 'button',
     class: 'btn btn--icon',
-    title: 'Siralama yonunu degistir',
-    'aria-label': 'Siralama yonunu degistir',
+    title: 'Sıralama yönünü değiştir',
+    'aria-label': 'Sıralama yönünü değiştir',
     text: '\u2193',
     onclick: () => {
       state.order = state.order === 'desc' ? 'asc' : 'desc';
@@ -129,8 +129,8 @@ export function createLibraryView({ onNavigateDiscover }) {
   const searchInput = el('input', {
     class: 'input filters__search',
     type: 'search',
-    placeholder: 'Gunlugumde ara...',
-    'aria-label': 'Gunlugumde baslik ara',
+    placeholder: 'Günlüğümde ara...',
+    'aria-label': 'Günlüğümde başlık ara',
   });
 
   // Her tus vurusunda istek atmamak icin 300 ms geciktirilir
@@ -149,13 +149,15 @@ export function createLibraryView({ onNavigateDiscover }) {
     onclick: () => resetFilters(),
   });
 
+  // Kayit sayaci filtre cubugunun sagina oturur: eskiden cubukla izgara
+  // arasinda tek basina bir satir kaplayip afisleri asagi itiyordu.
   const filters = el(
     'section',
     { class: 'filters', 'aria-label': 'Filtreler' },
-    el('div', { class: 'filters__row' }, chipRow, favoriteChip),
+    el('div', { class: 'filters__row' }, chipRow, favoriteChip, resultCount),
     el(
       'div',
-      { class: 'filters__row' },
+      { class: 'filters__row filters__row--meta' },
       searchInput,
       mediaTypeSelect.wrapper,
       genreSelect.wrapper,
@@ -175,8 +177,9 @@ export function createLibraryView({ onNavigateDiscover }) {
       el(
         'div',
         {},
-        el('h1', { class: 'page-head__title', text: 'Gunlugum' }),
-        el('p', { class: 'page-head__subtitle', text: 'Izlediklerinizi ve izleyeceklerinizi yonetin.' }),
+        el('span', { class: 'page-head__eyebrow label-mono', text: 'Film & Dizi Günlüğü' }),
+        el('h1', { class: 'page-head__title', text: 'Günlüğüm' }),
+        el('p', { class: 'page-head__subtitle', text: 'İzlediklerinizi ve izleyeceklerinizi yönetin.' }),
       ),
       el(
         'div',
@@ -184,13 +187,12 @@ export function createLibraryView({ onNavigateDiscover }) {
         el('button', {
           type: 'button',
           class: 'btn btn--primary',
-          text: '+ Icerik ekle',
+          text: '+ İçerik ekle',
           onclick: onNavigateDiscover,
         }),
       ),
     ),
     filters,
-    resultCount,
     grid,
     paginationHost,
   );
@@ -235,7 +237,7 @@ export function createLibraryView({ onNavigateDiscover }) {
       const previousValue = genreSelect.select.value;
 
       clear(genreSelect.select);
-      genreSelect.select.append(el('option', { value: '', text: 'Tum kategoriler' }));
+      genreSelect.select.append(el('option', { value: '', text: 'Tüm kategoriler' }));
       for (const genre of genres) {
         genreSelect.select.append(
           el('option', { value: String(genre.id), text: `${genre.name} (${genre.count})` }),
@@ -261,7 +263,7 @@ export function createLibraryView({ onNavigateDiscover }) {
     const requestId = (requestSequence += 1);
 
     clear(grid).append(...createSkeletonCards(8));
-    resultCount.textContent = 'Yukleniyor...';
+    resultCount.textContent = 'Yükleniyor...';
     clear(paginationHost);
 
     try {
@@ -291,8 +293,8 @@ export function createLibraryView({ onNavigateDiscover }) {
       grid.append(
         createEmptyState({
           icon: '\u26a0',
-          title: 'Liste yuklenemedi',
-          text: error?.message ?? 'Bilinmeyen bir hata olustu.',
+          title: 'Liste yüklenemedi',
+          text: error?.message ?? 'Bilinmeyen bir hata oluştu.',
           action: el('button', { type: 'button', class: 'btn', text: 'Tekrar dene', onclick: () => load() }),
         }),
       );
@@ -329,8 +331,8 @@ export function createLibraryView({ onNavigateDiscover }) {
         hasActiveFilter
           ? createEmptyState({
               icon: '\u{1F50D}',
-              title: 'Bu filtrelerle kayit bulunamadi',
-              text: 'Filtreleri gevsetmeyi veya temizlemeyi deneyin.',
+              title: 'Bu filtrelerle kayıt bulunamadı',
+              text: 'Filtreleri gevşetmeyi veya temizlemeyi deneyin.',
               action: el('button', {
                 type: 'button',
                 class: 'btn btn--primary',
@@ -340,12 +342,12 @@ export function createLibraryView({ onNavigateDiscover }) {
             })
           : createEmptyState({
               icon: '\u{1F3AC}',
-              title: 'Gunlugunuz henuz bos',
-              text: 'Kesfet sekmesinden film veya dizi arayip ilk kaydinizi olusturun.',
+              title: 'Günlüğünüz henüz boş',
+              text: 'Keşfet sekmesinden film veya dizi arayıp ilk kaydınızı oluşturun.',
               action: el('button', {
                 type: 'button',
                 class: 'btn btn--primary',
-                text: 'Icerik kesfet',
+                text: 'İçerik keşfet',
                 onclick: onNavigateDiscover,
               }),
             }),
@@ -353,7 +355,7 @@ export function createLibraryView({ onNavigateDiscover }) {
       return;
     }
 
-    resultCount.textContent = `${response.total} kayit \u00b7 sayfa ${response.page}/${response.totalPages}`;
+    resultCount.textContent = `${response.total} kayıt \u00b7 sayfa ${response.page}/${response.totalPages}`;
 
     for (const entry of response.items) {
       grid.append(
@@ -385,7 +387,7 @@ export function createLibraryView({ onNavigateDiscover }) {
     const previousButton = el('button', {
       type: 'button',
       class: 'btn',
-      text: '\u2190 Onceki',
+      text: '\u2190 Önceki',
       disabled: response.page <= 1,
       onclick: () => {
         state.page -= 1;
@@ -443,8 +445,8 @@ function createSelect(label, options, onChange) {
 /** Puan filtresi secenekleri. */
 function buildRatingOptions() {
   const options = [
-    { value: '', label: 'Tum puanlar' },
-    { value: 'unrated', label: 'Puanlanmamis' },
+    { value: '', label: 'Tüm puanlar' },
+    { value: 'unrated', label: 'Puanlanmamış' },
   ];
   for (let threshold = 9; threshold >= 5; threshold -= 1) {
     options.push({ value: String(threshold), label: `${threshold}+ puan` });

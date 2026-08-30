@@ -43,7 +43,7 @@ function readUsername(body) {
     min: 3,
     max: 32,
     pattern: USERNAME_PATTERN,
-    patternMessage: 'Kullanici adi yalnizca harf, rakam, nokta, alt tire ve tire icerebilir.',
+    patternMessage: 'Kullanıcı adı yalnızca harf, rakam, nokta, alt tire ve tire içerebilir.',
   });
 }
 
@@ -78,13 +78,13 @@ export function registerAuthRoutes(router) {
     consumeRateLimit(`register-attempt:${ctx.ip}`, {
       limit: 20,
       windowMs: REGISTER_WINDOW_MS,
-      message: 'Cok fazla kayit denemesi. Lutfen bir sure sonra tekrar deneyin.',
+      message: 'Çok fazla kayıt denemesi. Lütfen bir süre sonra tekrar deneyin.',
     });
     //  2) Gercekten olusturulan hesap: bot/spam savunmasi, tavan sikidir.
     //     Burada sayaci artirmiyoruz; kayit basarili olursa artiracagiz.
     assertRateLimit(`register-created:${ctx.ip}`, {
       limit: 5,
-      message: 'Bu ag adresinden cok fazla hesap olusturuldu. Daha sonra tekrar deneyin.',
+      message: 'Bu ağ adresinden çok fazla hesap oluşturuldu. Daha sonra tekrar deneyin.',
     });
 
     const body = await ctx.body();
@@ -96,7 +96,7 @@ export function registerAuthRoutes(router) {
 
     // Sifrenin kullanici adiyla ayni olmasi cok yaygin bir zayiflik
     if (password.toLowerCase() === username.toLowerCase()) {
-      throw new HttpError(400, 'Sifre kullanici adiyla ayni olamaz.', { field: 'password' });
+      throw new HttpError(400, 'Şifre kullanıcı adıyla aynı olamaz.', { field: 'password' });
     }
 
     // createUser, UNIQUE cakismasinda 409 firlatir.
@@ -130,7 +130,7 @@ export function registerAuthRoutes(router) {
     consumeRateLimit(rateKey, {
       limit: 10,
       windowMs: 15 * 60 * 1000,
-      message: 'Cok fazla basarisiz giris denemesi. Lutfen biraz sonra tekrar deneyin.',
+      message: 'Çok fazla başarısız giriş denemesi. Lütfen biraz sonra tekrar deneyin.',
     });
 
     const userRow = findUserByUsername(username);
@@ -146,7 +146,7 @@ export function registerAuthRoutes(router) {
 
     if (!isValid) {
       // Hangisinin yanlis oldugunu soylemiyoruz (kullanici sizdirmasi savunmasi)
-      throw new HttpError(401, 'Kullanici adi veya sifre hatali.');
+      throw new HttpError(401, 'Kullanıcı adı veya şifre hatalı.');
     }
 
     resetRateLimit(rateKey);
@@ -198,10 +198,10 @@ export function registerAuthRoutes(router) {
       algo: userRow.password_algo,
     });
     if (!isValid) {
-      throw new HttpError(401, 'Mevcut sifre hatali.', { field: 'currentPassword' });
+      throw new HttpError(401, 'Mevcut şifre hatalı.', { field: 'currentPassword' });
     }
     if (currentPassword === newPassword) {
-      throw new HttpError(400, 'Yeni sifre eskisiyle ayni olamaz.', { field: 'newPassword' });
+      throw new HttpError(400, 'Yeni şifre eskisiyle aynı olamaz.', { field: 'newPassword' });
     }
 
     updateUserPassword(user.id, newPassword);

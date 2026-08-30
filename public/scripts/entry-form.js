@@ -35,7 +35,7 @@ function buildPreview(source) {
   const poster = source.posterUrl
     ? el('img', {
         src: source.posterUrl,
-        alt: `${source.title} afisi`,
+        alt: `${source.title} afişi`,
         loading: 'lazy',
         decoding: 'async',
       })
@@ -126,7 +126,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
     class: 'textarea',
     id: 'entry-review',
     maxlength: '5000',
-    placeholder: 'Bu yapim hakkinda notunuz... (istege bagli)',
+    placeholder: 'Bu yapım hakkında notunuz... (isteğe bağlı)',
   });
   reviewInput.value = initial.review ?? '';
 
@@ -137,7 +137,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
   const watchedAtField = el(
     'div',
     { class: 'field' },
-    el('label', { class: 'field__label', for: 'entry-watched-at', text: 'Izleme tarihi' }),
+    el('label', { class: 'field__label', for: 'entry-watched-at', text: 'İzleme tarihi' }),
     watchedAtInput,
   );
 
@@ -178,15 +178,15 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
     ? el('button', { type: 'button', class: 'btn btn--danger', text: 'Sil' })
     : el('span'); // hizalamayi korumak icin bos yer tutucu
 
-  const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgec' });
+  const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgeç' });
   const saveButton = el('button', {
     type: 'button',
     class: 'btn btn--primary',
-    text: isEdit ? 'Degisiklikleri kaydet' : 'Gunluge ekle',
+    text: isEdit ? 'Değişiklikleri kaydet' : 'Günlüğe ekle',
   });
 
   const { close } = openModal({
-    title: isEdit ? 'Kaydi duzenle' : 'Gunluge ekle',
+    title: isEdit ? 'Kaydı düzenle' : 'Günlüğe ekle',
     subtitle: source.title,
     body,
     footer: [deleteButton, cancelButton, saveButton],
@@ -220,7 +220,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
     // Sunucu da ayni kurali uygular; burada onceden kontrol edip gereksiz
     // istegi ve bekleme suresini kullaniciya yasatmiyoruz.
     if (values.watchedAt && values.watchedAt > today()) {
-      showError('Izleme tarihi gelecekte olamaz.');
+      showError('İzleme tarihi gelecekte olamaz.');
       watchedAtInput.focus();
       return;
     }
@@ -230,7 +230,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
     try {
       if (isEdit) {
         const result = await api.updateEntry(entry.id, values);
-        showToast('Kayit guncellendi.', 'success');
+        showToast('Kayıt güncellendi.', 'success');
         onSaved?.(result.entry);
       } else {
         const result = await api.createEntry({
@@ -244,7 +244,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
           genres: source.genres ?? [],
           ...values,
         });
-        showToast(`"${source.title}" gunluge eklendi.`, 'success');
+        showToast(`"${source.title}" günlüğe eklendi.`, 'success');
         onSaved?.(result.entry);
       }
       close();
@@ -267,8 +267,8 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
   if (isEdit) {
     deleteButton.addEventListener('click', async () => {
       const confirmed = await confirmDialog({
-        title: 'Kaydi sil',
-        message: `"${entry.title}" gunlugunuzden kaldirilacak. Bu islem geri alinamaz.`,
+        title: 'Kaydı sil',
+        message: `"${entry.title}" günlüğünüzden kaldırılacak. Bu işlem geri alınamaz.`,
         confirmLabel: 'Sil',
         danger: true,
       });
@@ -276,7 +276,7 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
 
       try {
         await api.deleteEntry(entry.id);
-        showToast('Kayit silindi.', 'success');
+        showToast('Kayıt silindi.', 'success');
         close();
         onDeleted?.(entry.id);
       } catch (error) {
@@ -292,9 +292,9 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
  */
 async function offerEditExisting(entryId, source, onSaved, onDeleted) {
   const confirmed = await confirmDialog({
-    title: 'Bu icerik zaten gunlugunuzde',
-    message: `"${source.title}" listenizde kayitli. Mevcut kaydi duzenlemek ister misiniz?`,
-    confirmLabel: 'Duzenle',
+    title: 'Bu içerik zaten günlüğünüzde',
+    message: `"${source.title}" listenizde kayıtlı. Mevcut kaydı düzenlemek ister misiniz?`,
+    confirmLabel: 'Düzenle',
   });
   if (!confirmed) return;
 

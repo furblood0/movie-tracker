@@ -87,15 +87,15 @@ function renderUserMenu(user) {
   const passwordButton = el('button', {
     type: 'button',
     class: 'btn btn--ghost',
-    text: 'Sifre',
-    title: 'Sifre degistir',
+    text: 'Şifre',
+    title: 'Şifre değiştir',
     onclick: openPasswordModal,
   });
 
   const logoutButton = el('button', {
     type: 'button',
     class: 'btn',
-    text: 'Cikis',
+    text: 'Çıkış',
     onclick: async () => {
       try {
         await api.logout();
@@ -103,7 +103,7 @@ function renderUserMenu(user) {
         // Cikis istegi basarisiz olsa da yerel durumu temizliyoruz:
         // kullanicinin ekranda takili kalmasi daha kotu bir deneyim olurdu.
       }
-      showToast('Cikis yapildi.', 'success');
+      showToast('Çıkış yapıldı.', 'success');
       showAuthScreen();
     },
   });
@@ -122,24 +122,24 @@ function openPasswordModal() {
   const newInput = el('input', { class: 'input', type: 'password', autocomplete: 'new-password' });
   const errorBox = el('div', { class: 'form-alert', role: 'alert', hidden: true });
 
-  const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgec' });
-  const saveButton = el('button', { type: 'button', class: 'btn btn--primary', text: 'Sifreyi degistir' });
+  const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgeç' });
+  const saveButton = el('button', { type: 'button', class: 'btn btn--primary', text: 'Şifreyi değiştir' });
 
   const { close } = openModal({
-    title: 'Sifre degistir',
-    subtitle: 'Degisiklikten sonra diger cihazlardaki oturumlar kapatilir.',
+    title: 'Şifre değiştir',
+    subtitle: 'Değişiklikten sonra diğer cihazlardaki oturumlar kapatılır.',
     body: [
       errorBox,
       el(
         'div',
         { class: 'field' },
-        el('span', { class: 'field__label', text: 'Mevcut sifre' }),
+        el('span', { class: 'field__label', text: 'Mevcut şifre' }),
         currentInput,
       ),
       el(
         'div',
         { class: 'field' },
-        el('span', { class: 'field__label', text: 'Yeni sifre' }),
+        el('span', { class: 'field__label', text: 'Yeni şifre' }),
         newInput,
         el('p', { class: 'field__hint', text: 'En az 8 karakter' }),
       ),
@@ -158,11 +158,11 @@ function openPasswordModal() {
         currentPassword: currentInput.value,
         newPassword: newInput.value,
       });
-      showToast('Sifreniz guncellendi.', 'success');
+      showToast('Şifreniz güncellendi.', 'success');
       close();
     } catch (error) {
       setLoading(saveButton, false);
-      errorBox.textContent = error instanceof ApiError ? error.message : 'Beklenmeyen bir hata olustu.';
+      errorBox.textContent = error instanceof ApiError ? error.message : 'Beklenmeyen bir hata oluştu.';
       errorBox.hidden = false;
     }
   });
@@ -194,7 +194,7 @@ function showAppScreen(user) {
 // sifre degistirildi) kullaniciyi giris ekranina dondur.
 setUnauthorizedHandler(() => {
   if (!state.user) return; // zaten giris ekranindayiz
-  showToast('Oturumunuz sona erdi. Lutfen tekrar giris yapin.', 'warning', 6000);
+  showToast('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'warning', 6000);
   showAuthScreen();
 });
 

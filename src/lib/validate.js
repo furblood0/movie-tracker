@@ -23,12 +23,12 @@ function fail(field, message) {
 export function requireString(value, field, options = {}) {
   const { min = 1, max = 1000, pattern, patternMessage } = options;
 
-  if (typeof value !== 'string') fail(field, `"${field}" alani metin olmalidir.`);
+  if (typeof value !== 'string') fail(field, `"${field}" alanı metin olmalıdır.`);
   const trimmed = value.trim();
 
-  if (trimmed.length < min) fail(field, `"${field}" en az ${min} karakter olmalidir.`);
+  if (trimmed.length < min) fail(field, `"${field}" en az ${min} karakter olmalıdır.`);
   if (trimmed.length > max) fail(field, `"${field}" en fazla ${max} karakter olabilir.`);
-  if (pattern && !pattern.test(trimmed)) fail(field, patternMessage ?? `"${field}" gecersiz karakterler iceriyor.`);
+  if (pattern && !pattern.test(trimmed)) fail(field, patternMessage ?? `"${field}" geçersiz karakterler içeriyor.`);
 
   return trimmed;
 }
@@ -53,7 +53,7 @@ export function optionalString(value, field, options = {}) {
  */
 export function requireEnum(value, field, allowed) {
   if (typeof value !== 'string' || !allowed.includes(/** @type {T} */ (value))) {
-    fail(field, `"${field}" su degerlerden biri olmalidir: ${allowed.join(', ')}`);
+    fail(field, `"${field}" şu değerlerden biri olmalıdır: ${allowed.join(', ')}`);
   }
   return /** @type {T} */ (value);
 }
@@ -68,15 +68,15 @@ export function requireNumber(value, field, options = {}) {
 
   const parsed = typeof value === 'number' ? value : Number(value);
   if (typeof value === 'boolean' || value === null || value === '' || !Number.isFinite(parsed)) {
-    fail(field, `"${field}" gecerli bir sayi olmalidir.`);
+    fail(field, `"${field}" geçerli bir sayı olmalıdır.`);
   }
-  if (integer && !Number.isInteger(parsed)) fail(field, `"${field}" tam sayi olmalidir.`);
-  if (parsed < min || parsed > max) fail(field, `"${field}" ${min} ile ${max} arasinda olmalidir.`);
+  if (integer && !Number.isInteger(parsed)) fail(field, `"${field}" tam sayı olmalıdır.`);
+  if (parsed < min || parsed > max) fail(field, `"${field}" ${min} ile ${max} arasında olmalıdır.`);
 
   if (step) {
     // Kayan nokta hatasini onlemek icin yuvarlayarak karsilastir
     const remainder = Math.abs(Math.round(parsed / step) * step - parsed);
-    if (remainder > 1e-9) fail(field, `"${field}" ${step} adimlarla verilmelidir.`);
+    if (remainder > 1e-9) fail(field, `"${field}" ${step} adımlarla verilmelidir.`);
   }
   return parsed;
 }
@@ -93,7 +93,7 @@ export function optionalBoolean(value, field) {
   if (typeof value === 'boolean') return value;
   if (value === 1 || value === '1' || value === 'true') return true;
   if (value === 0 || value === '0' || value === 'false') return false;
-  return fail(field, `"${field}" true/false olmalidir.`);
+  return fail(field, `"${field}" true/false olmalıdır.`);
 }
 
 /**
@@ -104,13 +104,13 @@ export function optionalDate(value, field) {
   if (value === undefined || value === null || value === '') return null;
 
   const text = requireString(value, field, { min: 10, max: 10 });
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) fail(field, `"${field}" YYYY-MM-DD biciminde olmalidir.`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) fail(field, `"${field}" YYYY-MM-DD biçiminde olmalıdır.`);
 
   const [year, month, day] = text.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   const isRealDate =
     date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-  if (!isRealDate) fail(field, `"${field}" takvimde gecerli bir tarih degil.`);
+  if (!isRealDate) fail(field, `"${field}" takvimde geçerli bir tarih değil.`);
 
   return text;
 }
@@ -119,7 +119,7 @@ export function optionalDate(value, field) {
 export function optionalEmail(value, field) {
   const text = optionalString(value, field, { max: 254 });
   if (text === null) return null;
-  if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(text)) fail(field, 'Gecerli bir e-posta adresi girin.');
+  if (!/^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(text)) fail(field, 'Geçerli bir e-posta adresi girin.');
   return text.toLowerCase();
 }
 
@@ -127,7 +127,7 @@ export function optionalEmail(value, field) {
 export function requireId(value, field = 'id') {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new HttpError(400, `"${field}" pozitif bir tam sayi olmalidir.`, { field });
+    throw new HttpError(400, `"${field}" pozitif bir tam sayı olmalıdır.`, { field });
   }
   return parsed;
 }

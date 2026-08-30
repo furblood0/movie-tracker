@@ -9,16 +9,24 @@
 import { api, ApiError } from './api.js';
 import { clear, el } from './dom.js';
 
-/** Marka logosu (giris kartinin ustu). */
+/** Marka logosu (giris kartinin ustu): bilet kocani. */
 function brandMark() {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('viewBox', '0 0 32 32');
   svg.setAttribute('aria-hidden', 'true');
 
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M16 4l3.4 7.2 7.8 1.1-5.7 5.5 1.4 7.8L16 21.9 9.1 25.6l1.4-7.8-5.7-5.5 7.8-1.1z');
-  svg.append(path);
+  const body = document.createElementNS(ns, 'path');
+  body.setAttribute(
+    'd',
+    'M5 7h22a2 2 0 0 1 2 2v3.2a3.8 3.8 0 0 0 0 7.6V23a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3.2a3.8 3.8 0 0 0 0-7.6V9a2 2 0 0 1 2-2Z',
+  );
 
+  const perforation = document.createElementNS(ns, 'path');
+  perforation.setAttribute('class', 'brand__mark-perf');
+  perforation.setAttribute('d', 'M21.5 10.5v11');
+
+  svg.append(body, perforation);
   return svg;
 }
 
@@ -64,8 +72,8 @@ export function createAuthView({ onAuthenticated }) {
   const alertBox = el('div', { class: 'form-alert', role: 'alert', hidden: true });
   const formHost = el('div');
 
-  const loginTab = el('button', { type: 'button', class: 'auth__tab is-active', text: 'Giris yap' });
-  const registerTab = el('button', { type: 'button', class: 'auth__tab', text: 'Kayit ol' });
+  const loginTab = el('button', { type: 'button', class: 'auth__tab is-active', text: 'Giriş yap' });
+  const registerTab = el('button', { type: 'button', class: 'auth__tab', text: 'Kayıt ol' });
 
   loginTab.addEventListener('click', () => switchMode('login'));
   registerTab.addEventListener('click', () => switchMode('register'));
@@ -98,14 +106,14 @@ export function createAuthView({ onAuthenticated }) {
 
     const username = createField({
       name: 'username',
-      label: 'Kullanici adi',
+      label: 'Kullanıcı adı',
       autocomplete: 'username',
       hint: isRegister ? '3-32 karakter; harf, rakam, nokta, alt tire ve tire' : undefined,
     });
 
     const password = createField({
       name: 'password',
-      label: 'Sifre',
+      label: 'Şifre',
       type: 'password',
       autocomplete: isRegister ? 'new-password' : 'current-password',
       hint: isRegister ? 'En az 8 karakter' : undefined,
@@ -114,7 +122,7 @@ export function createAuthView({ onAuthenticated }) {
     const email = isRegister
       ? createField({
           name: 'email',
-          label: 'E-posta (istege bagli)',
+          label: 'E-posta (isteğe bağlı)',
           type: 'email',
           autocomplete: 'email',
           required: false,
@@ -124,7 +132,7 @@ export function createAuthView({ onAuthenticated }) {
     const submitButton = el('button', {
       type: 'submit',
       class: 'btn btn--primary btn--block',
-      text: isRegister ? 'Hesap olustur' : 'Giris yap',
+      text: isRegister ? 'Hesap oluştur' : 'Giriş yap',
     });
 
     const fields = [username, password, email].filter(Boolean);
@@ -160,7 +168,7 @@ export function createAuthView({ onAuthenticated }) {
         setLoading(submitButton, false);
 
         if (!(error instanceof ApiError)) {
-          showAlert('Beklenmeyen bir hata olustu.');
+          showAlert('Beklenmeyen bir hata oluştu.');
           return;
         }
 
@@ -186,7 +194,7 @@ export function createAuthView({ onAuthenticated }) {
     el('div', { class: 'auth__brand' }, brandMark(), el('span', { text: 'Movie Tracker' })),
     el('p', {
       class: 'auth__tagline',
-      text: 'Izlediklerinizi puanlayin, izleyeceklerinizi unutmayin.',
+      text: 'İzlediklerinizi puanlayın, izleyeceklerinizi unutmayın.',
     }),
     el('div', { class: 'auth__tabs', role: 'tablist' }, loginTab, registerTab),
     alertBox,
@@ -204,7 +212,7 @@ export function setLoading(button, isLoading) {
     button.disabled = true;
     button.dataset.label = button.textContent;
     clear(button);
-    button.append(el('span', { class: 'btn__spinner', 'aria-hidden': 'true' }), 'Lutfen bekleyin');
+    button.append(el('span', { class: 'btn__spinner', 'aria-hidden': 'true' }), 'Lütfen bekleyin');
   } else {
     button.disabled = false;
     button.textContent = button.dataset.label ?? button.textContent;

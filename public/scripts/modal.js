@@ -147,7 +147,7 @@ export function confirmDialog({ title, message, confirmLabel = 'Onayla', danger 
       resolve(result);
     };
 
-    const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgec' });
+    const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgeç' });
     const confirmButton = el('button', {
       type: 'button',
       class: `btn ${danger ? 'btn--danger' : 'btn--primary'}`,

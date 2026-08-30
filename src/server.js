@@ -109,7 +109,7 @@ function handleError(error, res, requestLabel) {
 
   // Beklenmeyen hata: detay sizdirmadan 500 don, tam izi sunucuya logla.
   logger.error(`${requestLabel} - beklenmeyen hata:`, error);
-  sendJson(res, 500, { error: 'Sunucu tarafinda beklenmeyen bir hata olustu.' });
+  sendJson(res, 500, { error: 'Sunucu tarafında beklenmeyen bir hata oluştu.' });
 }
 
 // ---------------------------------------------------------------------
@@ -129,7 +129,7 @@ async function handleRequest(req, res) {
   try {
     url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
   } catch {
-    sendText(res, 400, '400 Gecersiz istek satiri');
+    sendText(res, 400, '400 Geçersiz istek satırı');
     return;
   }
 
@@ -183,7 +183,7 @@ async function handleRequest(req, res) {
     }
 
     const served = await serveStatic(req, res, url.pathname);
-    if (!served) sendText(res, 404, '404 Bulunamadi');
+    if (!served) sendText(res, 404, '404 Bulunamadı');
   } catch (error) {
     handleError(error, res, requestLabel);
   }

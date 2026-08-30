@@ -55,7 +55,7 @@ export function createUser({ username, password, email = null, displayName = nul
       const field = String(error.message).includes('users.email') ? 'email' : 'username';
       throw new HttpError(
         409,
-        field === 'email' ? 'Bu e-posta adresi zaten kayitli.' : 'Bu kullanici adi zaten alinmis.',
+        field === 'email' ? 'Bu e-posta adresi zaten kayıtlı.' : 'Bu kullanıcı adı zaten alınmış.',
         { field },
       );
     }

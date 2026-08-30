@@ -39,7 +39,7 @@ export function attachUser(ctx) {
 export function requireAuth(ctx) {
   const user = ctx.user ?? attachUser(ctx);
   if (!user) {
-    throw new HttpError(401, 'Bu islem icin giris yapmalisiniz.');
+    throw new HttpError(401, 'Bu işlem için giriş yapmalısınız.');
   }
   return user;
 }

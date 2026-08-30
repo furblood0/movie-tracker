@@ -97,7 +97,7 @@ export function readJsonBody(req) {
     // Content-Length ile gelen erken uyari: daha veri okumadan reddet.
     const declaredLength = Number.parseInt(req.headers['content-length'] ?? '', 10);
     if (Number.isFinite(declaredLength) && declaredLength > config.maxRequestBodyBytes) {
-      reject(new HttpError(413, 'Istek govdesi cok buyuk.'));
+      reject(new HttpError(413, 'İstek gövdesi çok büyük.'));
       return;
     }
 
@@ -116,7 +116,7 @@ export function readJsonBody(req) {
     const onData = (chunk) => {
       receivedBytes += chunk.length;
       if (receivedBytes > config.maxRequestBodyBytes) {
-        finish(reject, new HttpError(413, 'Istek govdesi cok buyuk.'));
+        finish(reject, new HttpError(413, 'İstek gövdesi çok büyük.'));
         req.destroy();
         return;
       }
@@ -133,17 +133,17 @@ export function readJsonBody(req) {
         const parsed = JSON.parse(raw);
         // Dizi veya skaler govdeleri reddet: tum uc noktalarimiz nesne bekler.
         if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-          finish(reject, new HttpError(400, 'Istek govdesi bir JSON nesnesi olmalidir.'));
+          finish(reject, new HttpError(400, 'İstek gövdesi bir JSON nesnesi olmalıdır.'));
           return;
         }
         finish(resolve, parsed);
       } catch {
-        finish(reject, new HttpError(400, 'Istek govdesi gecerli bir JSON degil.'));
+        finish(reject, new HttpError(400, 'İstek gövdesi geçerli bir JSON değil.'));
       }
     };
 
     const onError = (error) => {
-      finish(reject, new HttpError(400, `Istek govdesi okunamadi: ${error.message}`));
+      finish(reject, new HttpError(400, `İstek gövdesi okunamadı: ${error.message}`));
     };
 
     function cleanup() {

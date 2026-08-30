@@ -60,7 +60,7 @@ async function request(method, path, body) {
     response = await fetch(path, options);
   } catch {
     // Ag kopmasi / sunucu kapali
-    throw new ApiError(0, 'Sunucuya ulasilamiyor. Baglantinizi kontrol edin.');
+    throw new ApiError(0, 'Sunucuya ulaşılamıyor. Bağlantınızı kontrol edin.');
   }
 
   // 204 gibi govdesiz yanitlar

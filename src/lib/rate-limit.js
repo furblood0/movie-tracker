@@ -39,7 +39,7 @@ export function consumeRateLimit(key, { limit, windowMs, message }) {
     const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
     const error = new HttpError(
       429,
-      message ?? `Cok fazla deneme yaptiniz. ${retryAfterSeconds} saniye sonra tekrar deneyin.`,
+      message ?? `Çok fazla deneme yaptınız. ${retryAfterSeconds} saniye sonra tekrar deneyin.`,
       { retryAfterSeconds },
     );
     error.headers = { 'Retry-After': String(retryAfterSeconds) };
@@ -60,7 +60,7 @@ export function assertRateLimit(key, { limit, message }) {
 
   if (bucket.count >= limit) {
     const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - Date.now()) / 1000));
-    const error = new HttpError(429, message ?? 'Islem siniri asildi. Daha sonra tekrar deneyin.', {
+    const error = new HttpError(429, message ?? 'İşlem sınırı aşıldı. Daha sonra tekrar deneyin.', {
       retryAfterSeconds,
     });
     error.headers = { 'Retry-After': String(retryAfterSeconds) };

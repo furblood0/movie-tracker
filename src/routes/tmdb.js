@@ -25,7 +25,7 @@ function limitTmdbUsage(userId) {
   consumeRateLimit(`tmdb:${userId}`, {
     limit: 60,
     windowMs: 60 * 1000,
-    message: 'Cok hizli arama yapiyorsunuz. Lutfen bir dakika bekleyin.',
+    message: 'Çok hızlı arama yapıyorsunuz. Lütfen bir dakika bekleyin.',
   });
 }
 

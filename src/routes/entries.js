@@ -73,7 +73,7 @@ function readPosterPath(value) {
   if (posterPath === null) return null;
 
   if (!/^\/[A-Za-z0-9._-]+$/.test(posterPath)) {
-    throw new HttpError(400, 'posterPath yalnizca TMDb goreli yolu olabilir (ornek: /abc123.jpg).', {
+    throw new HttpError(400, 'posterPath yalnızca TMDb göreli yolu olabilir (örnek: /abc123.jpg).', {
       field: 'posterPath',
     });
   }
@@ -86,7 +86,7 @@ function readWatchedAt(value) {
   if (watchedAt === null) return null;
 
   if (watchedAt > maxWatchedIsoDate()) {
-    throw new HttpError(400, 'Izleme tarihi gelecekte olamaz.', { field: 'watchedAt' });
+    throw new HttpError(400, 'İzleme tarihi gelecekte olamaz.', { field: 'watchedAt' });
   }
   return watchedAt;
 }
@@ -98,10 +98,10 @@ function readWatchedAt(value) {
 function readGenres(value) {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) {
-    throw new HttpError(400, 'genres bir dizi olmalidir.', { field: 'genres' });
+    throw new HttpError(400, 'genres bir dizi olmalıdır.', { field: 'genres' });
   }
   if (value.length > MAX_GENRES_PER_ENTRY) {
-    throw new HttpError(400, `Bir kayitta en fazla ${MAX_GENRES_PER_ENTRY} tur olabilir.`, { field: 'genres' });
+    throw new HttpError(400, `Bir kayıtta en fazla ${MAX_GENRES_PER_ENTRY} tür olabilir.`, { field: 'genres' });
   }
 
   return value.map((genre, index) => ({
@@ -147,7 +147,7 @@ export function registerEntryRoutes(router) {
     };
 
     if (filters.minRating !== null && filters.maxRating !== null && filters.minRating > filters.maxRating) {
-      throw new HttpError(400, 'minRating, maxRating degerinden buyuk olamaz.', { field: 'minRating' });
+      throw new HttpError(400, 'minRating, maxRating değerinden büyük olamaz.', { field: 'minRating' });
     }
 
     sendJson(ctx.res, 200, listEntries(user.id, filters));
@@ -206,7 +206,7 @@ export function registerEntryRoutes(router) {
     const entry = findEntry(user.id, requireId(ctx.params.id));
 
     // Baska kullanicinin kaydi da ayni 404'u alir: kaydin varligi sizdirilmaz.
-    if (!entry) throw new HttpError(404, 'Kayit bulunamadi.');
+    if (!entry) throw new HttpError(404, 'Kayıt bulunamadı.');
 
     sendJson(ctx.res, 200, { entry });
   });
@@ -220,7 +220,7 @@ export function registerEntryRoutes(router) {
     const body = await ctx.body();
 
     const existing = findEntry(user.id, entryId);
-    if (!existing) throw new HttpError(404, 'Kayit bulunamadi.');
+    if (!existing) throw new HttpError(404, 'Kayıt bulunamadı.');
 
     /** @type {Record<string, unknown>} */
     const changes = {};
@@ -235,7 +235,7 @@ export function registerEntryRoutes(router) {
     if ('genres' in body) changes.genres = readGenres(body.genres);
 
     if (Object.keys(changes).length === 0) {
-      throw new HttpError(400, 'Guncellenecek en az bir alan gondermelisiniz.');
+      throw new HttpError(400, 'Güncellenecek en az bir alan göndermelisiniz.');
     }
 
     // "izlenmedi" -> "izledim" gecisinde tarih bos ise bugunu yaz.
@@ -253,7 +253,7 @@ export function registerEntryRoutes(router) {
     const user = requireAuth(ctx);
     const deleted = deleteEntry(user.id, requireId(ctx.params.id));
 
-    if (!deleted) throw new HttpError(404, 'Kayit bulunamadi.');
+    if (!deleted) throw new HttpError(404, 'Kayıt bulunamadı.');
 
     sendEmpty(ctx.res, 204);
   });

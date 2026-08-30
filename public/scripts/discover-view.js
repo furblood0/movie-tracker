@@ -26,15 +26,15 @@ export function createDiscoverView({ onEntrySaved }) {
   const state = { query: '', type: 'multi', page: 1, totalPages: 1 };
 
   const grid = el('div', { class: 'card-grid' });
-  const sectionTitle = el('h2', { class: 'section-head__title', text: 'Bu hafta one cikanlar' });
+  const sectionTitle = el('h2', { class: 'section-head__title', text: 'Bu hafta öne çıkanlar' });
   const resultCount = el('p', { class: 'result-count', 'aria-live': 'polite' });
   const paginationHost = el('div');
 
   const searchInput = el('input', {
     class: 'input filters__search',
     type: 'search',
-    placeholder: 'Film veya dizi adi yazin...',
-    'aria-label': 'TMDb uzerinde film veya dizi ara',
+    placeholder: 'Film veya dizi adı yazın...',
+    'aria-label': 'TMDb üzerinde film veya dizi ara',
     autocomplete: 'off',
   });
 
@@ -59,7 +59,7 @@ export function createDiscoverView({ onEntrySaved }) {
   });
 
   // Icerik turu secimi (cipler)
-  const typeChips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Icerik turu' });
+  const typeChips = el('div', { class: 'chips', role: 'group', 'aria-label': 'İçerik türü' });
   const chipButtons = SEARCH_TYPES.map((option) => {
     const chip = el('button', {
       type: 'button',
@@ -87,10 +87,11 @@ export function createDiscoverView({ onEntrySaved }) {
       el(
         'div',
         {},
-        el('h1', { class: 'page-head__title', text: 'Kesfet' }),
+        el('span', { class: 'page-head__eyebrow label-mono', text: 'TMDb Arşivi' }),
+        el('h1', { class: 'page-head__title', text: 'Keşfet' }),
         el('p', {
           class: 'page-head__subtitle',
-          text: 'TMDb arsivinde arayin, begendiginizi gunlugunuze ekleyin.',
+          text: 'TMDb arşivinde arayın, beğendiğinizi günlüğünüze ekleyin.',
         }),
       ),
     ),
@@ -127,7 +128,7 @@ export function createDiscoverView({ onEntrySaved }) {
     resultCount.textContent = '';
 
     const isSearch = state.query !== '';
-    sectionTitle.textContent = isSearch ? `"${state.query}" icin sonuclar` : 'Bu hafta one cikanlar';
+    sectionTitle.textContent = isSearch ? `"${state.query}" için sonuçlar` : 'Bu hafta öne çıkanlar';
 
     try {
       const response = isSearch
@@ -145,8 +146,8 @@ export function createDiscoverView({ onEntrySaved }) {
       grid.append(
         createEmptyState({
           icon: '\u26a0',
-          title: 'Sonuclar getirilemedi',
-          text: error?.message ?? 'Bilinmeyen bir hata olustu.',
+          title: 'Sonuçlar getirilemedi',
+          text: error?.message ?? 'Bilinmeyen bir hata oluştu.',
           action: el('button', {
             type: 'button',
             class: 'btn',
@@ -166,14 +167,14 @@ export function createDiscoverView({ onEntrySaved }) {
       grid.append(
         createEmptyState({
           icon: '\u{1F50E}',
-          title: 'Sonuc bulunamadi',
-          text: 'Baska bir yazim denemeyi veya icerik turu filtresini degistirmeyi deneyin.',
+          title: 'Sonuç bulunamadı',
+          text: 'Başka bir yazım denemeyi veya içerik türü filtresini değiştirmeyi deneyin.',
         }),
       );
       return;
     }
 
-    resultCount.textContent = isSearch ? `${response.totalResults} sonuc` : '';
+    resultCount.textContent = isSearch ? `${response.totalResults} sonuç` : '';
 
     for (const item of response.results) {
       grid.append(
@@ -198,7 +199,7 @@ export function createDiscoverView({ onEntrySaved }) {
           el('button', {
             type: 'button',
             class: 'btn',
-            text: '\u2190 Onceki',
+            text: '\u2190 Önceki',
             disabled: response.page <= 1,
             onclick: () => {
               state.page -= 1;
@@ -235,9 +236,9 @@ export function createDiscoverView({ onEntrySaved }) {
  * @param {() => void} [onEntrySaved]
  */
 async function openDetailsModal(item, onEntrySaved) {
-  const bodyHost = el('div', { text: 'Yukleniyor...' });
+  const bodyHost = el('div', { text: 'Yükleniyor...' });
 
-  const addButton = el('button', { type: 'button', class: 'btn btn--primary', text: 'Gunluge ekle' });
+  const addButton = el('button', { type: 'button', class: 'btn btn--primary', text: 'Günlüğe ekle' });
   const closeButton = el('button', { type: 'button', class: 'btn', text: 'Kapat' });
 
   const { close } = openModal({
@@ -260,7 +261,7 @@ async function openDetailsModal(item, onEntrySaved) {
     details = await api.tmdbDetails(item.mediaType, item.tmdbId);
   } catch (error) {
     clear(bodyHost);
-    bodyHost.append(el('p', { class: 'form-alert', text: error?.message ?? 'Detaylar alinamadi.' }));
+    bodyHost.append(el('p', { class: 'form-alert', text: error?.message ?? 'Detaylar alınamadı.' }));
     return;
   }
 
@@ -268,7 +269,7 @@ async function openDetailsModal(item, onEntrySaved) {
     details.releaseYear ? String(details.releaseYear) : null,
     details.runtime ? `${details.runtime} dk` : null,
     details.numberOfSeasons ? `${details.numberOfSeasons} sezon` : null,
-    details.numberOfEpisodes ? `${details.numberOfEpisodes} bolum` : null,
+    details.numberOfEpisodes ? `${details.numberOfEpisodes} bölüm` : null,
     details.voteAverage ? `TMDb ${formatRating(details.voteAverage)}` : null,
   ].filter(Boolean);
 
@@ -281,7 +282,7 @@ async function openDetailsModal(item, onEntrySaved) {
         'div',
         { class: 'entry-preview__poster' },
         details.posterUrl
-          ? el('img', { src: details.posterUrl, alt: `${details.title} afisi`, loading: 'lazy' })
+          ? el('img', { src: details.posterUrl, alt: `${details.title} afişi`, loading: 'lazy' })
           : el('div', { class: 'card__poster-fallback', text: details.title.slice(0, 1).toUpperCase() }),
       ),
       el(

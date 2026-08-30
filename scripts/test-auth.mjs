@@ -153,7 +153,7 @@ await test('cikis sonrasi oturum dusuyor (204 + cerez silinir)', async () => {
 await test('yanlis sifre ile giris reddedilir (401)', async () => {
   const res = await client.request('POST', '/api/auth/login', { username, password: 'YanlisSifre1' });
   assert.equal(res.status, 401);
-  assert.equal(res.body.error, 'Kullanici adi veya sifre hatali.');
+  assert.equal(res.body.error, 'Kullanıcı adı veya şifre hatalı.');
 });
 
 await test('olmayan kullanici da ayni 401 mesajini alir', async () => {
@@ -162,7 +162,7 @@ await test('olmayan kullanici da ayni 401 mesajini alir', async () => {
     password,
   });
   assert.equal(res.status, 401);
-  assert.equal(res.body.error, 'Kullanici adi veya sifre hatali.');
+  assert.equal(res.body.error, 'Kullanıcı adı veya şifre hatalı.');
 });
 
 await test('dogru sifre ile giris basarili (200)', async () => {

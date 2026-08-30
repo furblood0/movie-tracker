@@ -34,7 +34,7 @@ export function renderStars(value, options = {}) {
     {
       class: `stars${options.small ? ' stars--sm' : ''}`,
       role: 'img',
-      'aria-label': value ? `${formatRating(value)} / 10 puan` : 'Puanlanmamis',
+      'aria-label': value ? `${formatRating(value)} / 10 puan` : 'Puanlanmamış',
       style: { '--stars-fill': `${fillPercent}%` },
     },
     el('span', { class: 'stars__base', 'aria-hidden': 'true', text: glyphs }),
@@ -56,14 +56,14 @@ export function createRatingInput({ value = null, onChange } = {}) {
     type: 'button',
     class: 'btn btn--ghost',
     text: 'Temizle',
-    'aria-label': 'Puani temizle',
+    'aria-label': 'Puanı temizle',
   });
 
   const starsWrapper = el('div', {
     class: 'rating__stars',
     role: 'slider',
     tabindex: '0',
-    'aria-label': 'Puan (1-10, yarim yildiz adimlariyla)',
+    'aria-label': 'Puan (1-10, yarım yıldız adımlarıyla)',
     'aria-valuemin': '0',
     'aria-valuemax': String(MAX_RATING),
   });
@@ -144,7 +144,7 @@ export function createRatingInput({ value = null, onChange } = {}) {
     });
 
     const hasValue = previewValue !== null && previewValue !== undefined;
-    valueLabel.textContent = hasValue ? `${formatRating(previewValue)}/10` : 'Puanlanmadi';
+    valueLabel.textContent = hasValue ? `${formatRating(previewValue)}/10` : 'Puanlanmadı';
     valueLabel.classList.toggle('rating__value--empty', !hasValue);
   }
 
@@ -154,7 +154,7 @@ export function createRatingInput({ value = null, onChange } = {}) {
     starsWrapper.setAttribute('aria-valuenow', String(currentValue ?? 0));
     starsWrapper.setAttribute(
       'aria-valuetext',
-      currentValue === null ? 'Puanlanmadi' : `${formatRating(currentValue)} / 10`,
+      currentValue === null ? 'Puanlanmadı' : `${formatRating(currentValue)} / 10`,
     );
     paint(currentValue);
     onChange?.(currentValue);

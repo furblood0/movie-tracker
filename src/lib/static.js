@@ -98,7 +98,7 @@ async function statOrNull(filePath) {
 export async function serveStatic(req, res, pathname) {
   const safePath = resolveSafePath(pathname);
   if (safePath === null) {
-    sendText(res, 400, '400 Gecersiz yol');
+    sendText(res, 400, '400 Geçersiz yol');
     return true;
   }
 
