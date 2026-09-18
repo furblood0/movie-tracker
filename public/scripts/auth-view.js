@@ -62,10 +62,18 @@ function createField({ name, label, type = 'text', autocomplete, hint, required 
 
 /**
  * Kimlik dogrulama ekranini olusturur.
- * @param {{ onAuthenticated: (user: object) => void }} options
+ * @param {{
+ *   onAuthenticated: (user: object) => void,
+ *   registrationMode?: 'open' | 'invite' | 'closed'
+ * }} options
  * @returns {HTMLElement}
  */
-export function createAuthView({ onAuthenticated }) {
+export function createAuthView({ onAuthenticated, registrationMode = 'open' }) {
+  // Kayit kapaliysa sekme hic cizilmez; davet modunda ek bir alan eklenir.
+  // Sunucu ayni kurallari tekrar dogrular - bu yalnizca arayuz kolayligi.
+  const canRegister = registrationMode !== 'closed';
+  const needsInviteCode = registrationMode === 'invite';
+
   /** @type {'login' | 'register'} */
   let mode = 'login';
 
@@ -73,17 +81,19 @@ export function createAuthView({ onAuthenticated }) {
   const formHost = el('div');
 
   const loginTab = el('button', { type: 'button', class: 'auth__tab is-active', text: 'Giriş yap' });
-  const registerTab = el('button', { type: 'button', class: 'auth__tab', text: 'Kayıt ol' });
+  const registerTab = canRegister
+    ? el('button', { type: 'button', class: 'auth__tab', text: 'Kayıt ol' })
+    : null;
 
   loginTab.addEventListener('click', () => switchMode('login'));
-  registerTab.addEventListener('click', () => switchMode('register'));
+  registerTab?.addEventListener('click', () => switchMode('register'));
 
   function switchMode(nextMode) {
     if (mode === nextMode) return;
     mode = nextMode;
 
     loginTab.classList.toggle('is-active', mode === 'login');
-    registerTab.classList.toggle('is-active', mode === 'register');
+    registerTab?.classList.toggle('is-active', mode === 'register');
     hideAlert();
     renderForm();
   }
@@ -129,13 +139,23 @@ export function createAuthView({ onAuthenticated }) {
         })
       : null;
 
+    const inviteCode =
+      isRegister && needsInviteCode
+        ? createField({
+            name: 'inviteCode',
+            label: 'Davet kodu',
+            autocomplete: 'off',
+            hint: 'Kayıt yalnızca davetle açık. Kodu site sahibinden alın.',
+          })
+        : null;
+
     const submitButton = el('button', {
       type: 'submit',
       class: 'btn btn--primary btn--block',
       text: isRegister ? 'Hesap oluştur' : 'Giriş yap',
     });
 
-    const fields = [username, password, email].filter(Boolean);
+    const fields = [username, password, email, inviteCode].filter(Boolean);
 
     const form = el(
       'form',
@@ -159,6 +179,7 @@ export function createAuthView({ onAuthenticated }) {
         password: password.input.value,
       };
       if (email && email.input.value.trim() !== '') payload.email = email.input.value.trim();
+      if (inviteCode) payload.inviteCode = inviteCode.input.value.trim();
 
       setLoading(submitButton, true);
       try {
@@ -196,7 +217,11 @@ export function createAuthView({ onAuthenticated }) {
       class: 'auth__tagline',
       text: 'İzlediklerinizi puanlayın, izleyeceklerinizi unutmayın.',
     }),
-    el('div', { class: 'auth__tabs', role: 'tablist' }, loginTab, registerTab),
+    // Kayit kapaliyken tek secenekli bir sekme cubugu anlamsiz olurdu:
+    // sekmeler tamamen cikar, yerine kisa bir not girer.
+    canRegister
+      ? el('div', { class: 'auth__tabs', role: 'tablist' }, loginTab, registerTab)
+      : el('p', { class: 'auth__note', text: 'Yeni kayıtlar şu anda kapalı.' }),
     alertBox,
     formHost,
   );

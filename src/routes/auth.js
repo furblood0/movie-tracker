@@ -16,7 +16,7 @@ import {
   sendEmpty,
   sendJson,
 } from '../lib/http.js';
-import { fakeVerify, verifyPassword } from '../lib/password.js';
+import { fakeVerify, timingSafeCompare, verifyPassword } from '../lib/password.js';
 import { assertRateLimit, bumpRateLimit, consumeRateLimit, resetRateLimit } from '../lib/rate-limit.js';
 import { optionalEmail, optionalString, requireString } from '../lib/validate.js';
 import { attachUser, requireAuth } from '../middleware/auth.js';
@@ -36,6 +36,7 @@ import {
 const USERNAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const REGISTER_WINDOW_MS = 60 * 60 * 1000; // kayit sinirlarinin pencere suresi (1 saat)
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 /** Kullanici adi dogrulama (ortak kural: kayit ve giriste ayni). */
 function readUsername(body) {
@@ -72,6 +73,11 @@ export function registerAuthRoutes(router) {
   // Kayit
   // ------------------------------------------------------------------
   router.post('/api/auth/register', async (ctx) => {
+    // Kayit tamamen kapaliysa hic ileri gitmeyiz (scrypt maliyeti de olusmaz).
+    if (config.registration.mode === 'closed') {
+      throw new HttpError(403, 'Yeni kayıtlar şu anda kapalı.');
+    }
+
     // Iki katmanli sinir:
     //  1) Toplam deneme: form hatalari da sayilir, tavan genis tutulur ki
     //     dalgin kullanici kilitlenmesin.
@@ -88,6 +94,16 @@ export function registerAuthRoutes(router) {
     });
 
     const body = await ctx.body();
+
+    // Davet modunda kod dogru degilse hicbir kayit olusmaz. Karsilastirma
+    // sabit surede yapilir: dogru kodun uzunlugu/onek benzerligi yanit
+    // suresinden anlasilmasin.
+    if (config.registration.mode === 'invite') {
+      const inviteCode = requireString(body.inviteCode, 'inviteCode', { min: 1, max: 200 });
+      if (!timingSafeCompare(inviteCode, config.registration.inviteCode)) {
+        throw new HttpError(403, 'Davet kodu geçersiz.', { field: 'inviteCode' });
+      }
+    }
 
     const username = readUsername(body);
     const password = readPassword(body);
@@ -118,6 +134,27 @@ export function registerAuthRoutes(router) {
   // Giris
   // ------------------------------------------------------------------
   router.post('/api/auth/login', async (ctx) => {
+    // Kullanici adindan BAGIMSIZ, IP basina tavan.
+    //
+    // Neden asagidaki kullanici bazli sinir yetmiyor? Cunku o sinirin anahtari
+    // kullanici adini iceriyor: saldirgan her istekte farkli bir ad yollayarak
+    // her seferinde yepyeni bir kova acar ve sinira hic takilmaz. Kullanici
+    // bulunmasa bile fakeVerify tam maliyetli scrypt calistirdigi icin (istek
+    // basina ~32 MB bellek ve onlarca ms CPU) bu, sunucuyu dusurmeye yeten bir
+    // kaldirac olurdu. Bu sayac basarili giriste SIFIRLANMAZ; aksi halde gecerli
+    // bir hesabi olan saldirgan araya bir dogru giris sikistirip tavani
+    // surekli geri alabilirdi.
+    //
+    // Govdeyi okumadan once calisir: bozuk istekler de saldirganin butcesinden duser.
+    // 15 dakikada 60: normal kullanim icin fazlasiyla genis (oturum 30 gun
+    // yasiyor, kimse dakikada bir giris yapmaz), saldiri icin ise dar -
+    // surdurulebilir hiz 15 saniyede bir istege duser.
+    consumeRateLimit(`login-ip:${ctx.ip}`, {
+      limit: 60,
+      windowMs: LOGIN_WINDOW_MS,
+      message: 'Bu ağ adresinden çok fazla giriş denemesi yapıldı. Lütfen biraz sonra tekrar deneyin.',
+    });
+
     const body = await ctx.body();
 
     const username = readUsername(body);
@@ -126,10 +163,11 @@ export function registerAuthRoutes(router) {
     const password = requireString(body.password, 'password', { min: 1, max: 200 });
 
     // IP + kullanici adi bazli sinir: 15 dakikada 10 basarisiz deneme.
+    // Tek bir hesabi hedefleyen kaba kuvvete karsi; dogru sifrede sifirlanir.
     const rateKey = `login:${ctx.ip}:${username.toLowerCase()}`;
     consumeRateLimit(rateKey, {
       limit: 10,
-      windowMs: 15 * 60 * 1000,
+      windowMs: LOGIN_WINDOW_MS,
       message: 'Çok fazla başarısız giriş denemesi. Lütfen biraz sonra tekrar deneyin.',
     });
 
@@ -178,7 +216,10 @@ export function registerAuthRoutes(router) {
     // Arayuz acilista bu ucu cagirir; oturum yoksa 401 yerine null doneriz,
     // boylece istemci tarafinda "hata" yonetimine gerek kalmaz.
     const user = attachUser(ctx);
-    sendJson(ctx.res, 200, { user });
+
+    // Kayit modu da buradan gider: giris ekrani "Kayit ol" sekmesini ve davet
+    // kodu alanini buna gore cizer. Yalnizca MOD paylasilir, kodun kendisi asla.
+    sendJson(ctx.res, 200, { user, registration: { mode: config.registration.mode } });
   });
 
   // ------------------------------------------------------------------

@@ -70,8 +70,40 @@ function readNumber(key, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+/**
+ * Mantiksal ortam degiskeni okur.
+ *
+ * Yazim hatasi sessizce varsayilana dusmez: guvenlik anahtarlarinda
+ * ("TRUST_PROXY=ture" gibi) bu, farkinda olmadan yanlis modda calismak
+ * demek olurdu. Taninmayan deger acilista hata verir.
+ */
+function readBoolean(key, fallback) {
+  const raw = readValue(key, '').trim().toLowerCase();
+  if (raw === '') return fallback;
+  if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
+  if (['0', 'false', 'no', 'off'].includes(raw)) return false;
+  throw new Error(`${key} mantiksal bir deger olmali (true/false). Okunan: "${raw}"`);
+}
+
 const nodeEnv = readValue('NODE_ENV', 'development');
 const dbPathValue = readValue('DB_PATH', 'data/movie-tracker.sqlite');
+
+const REGISTRATION_MODES = ['open', 'invite', 'closed'];
+const registrationMode = readValue('REGISTRATION_MODE', 'open');
+
+if (!REGISTRATION_MODES.includes(registrationMode)) {
+  throw new Error(
+    `REGISTRATION_MODE gecersiz: "${registrationMode}". Beklenen: ${REGISTRATION_MODES.join(' | ')}`,
+  );
+}
+
+const inviteCode = readValue('INVITE_CODE', '');
+
+// Davet modunda kod zorunlu: aksi halde bos kod ile herkes kayit olabilirdi.
+// Sessizce "closed"a dusmek yerine acilista durduruyoruz.
+if (registrationMode === 'invite' && inviteCode === '') {
+  throw new Error('REGISTRATION_MODE=invite kullanmak icin INVITE_CODE tanimlanmalidir.');
+}
 
 export const config = {
   rootDir: ROOT_DIR,
@@ -83,14 +115,34 @@ export const config = {
   host: readValue('HOST', '127.0.0.1'),
   port: readNumber('PORT', 3000),
 
+  /**
+   * Ters proxy arkasinda miyiz?
+   *
+   * Kapaliyken istemci IP'si YALNIZCA soket adresinden okunur. Acik olursa
+   * X-Forwarded-For basligina guveniriz - ama bu basligi istemci de
+   * gonderebilir. Onunde kendi proxy'nizin (Caddy/nginx) olmadigi bir
+   * kurulumda acilirsa herkes istedigi IP'yi uydurup hiz sinirlarini
+   * bosa dusurebilir. Bu yuzden varsayilan KAPALI.
+   */
+  trustProxy: readBoolean('TRUST_PROXY', false),
+
   // Veritabani dosyasinin mutlak yolu (relatif verildiyse proje kokune gore cozulur)
   dbPath: path.isAbsolute(dbPathValue) ? dbPathValue : path.join(ROOT_DIR, dbPathValue),
 
   session: {
     cookieName: 'session_id',
     ttlDays: readNumber('SESSION_TTL_DAYS', 30),
-    // Uretimde HTTPS varsayildigi icin Secure bayragi eklenir
-    secure: nodeEnv === 'production',
+    // Uretimde HTTPS varsayilir ve cerez Secure isaretlenir. HTTPS olmayan
+    // bir ic agda yayin yapiliyorsa COOKIE_SECURE=false ile kapatilabilir;
+    // aksi halde tarayici cerezi hic gondermez ve giris calismaz.
+    secure: readBoolean('COOKIE_SECURE', nodeEnv === 'production'),
+  },
+
+  registration: {
+    /** open: herkes kayit olabilir · invite: davet kodu gerekir · closed: kayit kapali */
+    mode: /** @type {'open' | 'invite' | 'closed'} */ (registrationMode),
+    /** Yalnizca sunucuda kalir; istemciye asla gonderilmez. */
+    inviteCode,
   },
 
   tmdb: {

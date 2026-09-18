@@ -11,6 +11,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:reset": "node src/db/reset.js",
+    "reset-password": "node scripts/reset-password.mjs",
     "test:auth": "node scripts/test-auth.mjs",
     "test:tmdb": "node scripts/test-tmdb.mjs",
     "test:entries": "node scripts/test-entries.mjs",

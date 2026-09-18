@@ -218,12 +218,42 @@ cleanupExpired();
 const cleanupTimer = setInterval(cleanupExpired, 60 * 60 * 1000);
 cleanupTimer.unref(); // surecin kapanmasini engellemesin
 
-server.listen(config.port, config.host, () => {
-  logger.info(`Movie Tracker calisiyor -> http://${config.host}:${config.port} (${config.env})`);
-  logger.info(`Veritabani: ${config.dbPath}`);
+/**
+ * Yanlis yapilandirmayi CANLIDA degil, aciliste yakalamak icin.
+ * Sessizce yanlis modda calismak, hepsinden kotu sonucu dogurur.
+ */
+function logStartupChecks() {
   if (!hasTmdbCredentials()) {
     logger.warn('TMDB_API_KEY tanimli degil: arama uc noktasi 503 dondurecek. .env dosyasini doldurun.');
   }
+
+  logger.info(`Kayit modu: ${config.registration.mode}`);
+
+  if (config.isProduction && !config.session.secure) {
+    logger.warn(
+      'COOKIE_SECURE kapali: oturum cerezi Secure bayragi olmadan gonderiliyor. ' +
+        'Yalnizca HTTPS bulunmayan ic aglarda kullanin.',
+    );
+  }
+
+  // Cerez Secure iken sunucu HTTPS konusmaz: onunde TLS sonlandiran bir
+  // proxy YOKSA tarayici cerezi hic gondermez ve giris sessizce basarisiz olur.
+  if (config.session.secure) {
+    logger.info('Oturum cerezi Secure: onunde HTTPS sonlandiran bir proxy oldugundan emin olun.');
+  }
+
+  if (config.isProduction && !config.trustProxy) {
+    logger.warn(
+      'TRUST_PROXY kapali: tum istekler proxy IP adresinden geliyor gorunur ve ' +
+        'hiz sinirlari tum kullanicilar icin ortak olur. Ters proxy arkasindaysaniz acin.',
+    );
+  }
+}
+
+server.listen(config.port, config.host, () => {
+  logger.info(`Movie Tracker calisiyor -> http://${config.host}:${config.port} (${config.env})`);
+  logger.info(`Veritabani: ${config.dbPath}`);
+  logStartupChecks();
 });
 
 // ---------------------------------------------------------------------

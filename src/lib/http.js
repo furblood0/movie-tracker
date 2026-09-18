@@ -215,13 +215,25 @@ export function buildClearCookie(name, path = '/') {
 }
 
 /**
- * Istemci IP adresi (ters proxy arkasinda X-Forwarded-For'un ilk degeri).
+ * Istemci IP adresi.
+ *
+ * X-Forwarded-For'a YALNIZCA `TRUST_PROXY` acikken bakariz. Bu baslik istemci
+ * tarafindan serbestce uydurulabilir; kosulsuz guvenilseydi saldirgan her
+ * istege rastgele bir deger koyup kendine temiz bir hiz siniri kovasi acar,
+ * giris ve kayit sinirlari tamamen etkisiz kalirdi.
+ *
+ * Ayar acikken de yalnizca ILK deger kullanilir: zincirin sonraki adimlarini
+ * istemci doldurmus olabilir, ilk degeri ise bize en yakin proxy yazar.
+ *
  * @param {import('node:http').IncomingMessage} req
  */
 export function getClientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded !== '') {
-    return forwarded.split(',')[0].trim();
+  if (config.trustProxy) {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string' && forwarded !== '') {
+      const first = forwarded.split(',')[0].trim();
+      if (first !== '') return first;
+    }
   }
   return req.socket.remoteAddress ?? '';
 }

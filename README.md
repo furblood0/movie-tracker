@@ -73,6 +73,9 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 │   │   └── logger.js
 │   └── routes/
 │       └── index.js        # Rota kayıt noktası
+├── scripts/
+│   ├── reset-password.mjs  # Yönetici aracı: şifre sıfırla + oturumları düşür
+│   └── test-*.mjs          # Uçtan uca test paketleri
 └── data/                   # SQLite dosyası (git'e girmez)
 ```
 
@@ -105,17 +108,24 @@ değiştirilmez, değişiklikler yeni bir sürüm dosyasıyla gelir:
 - **İstek gövdesi:** 1 MB üst sınır, bozuk JSON `try-catch` ile 400'e çevrilir
 - **Başlıklar:** `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
 - **API anahtarı:** yalnızca sunucu belleğinde; istemci `/api/tmdb/*` proxy'sini kullanır
+- **İstemci IP'si:** `X-Forwarded-For` yalnızca `TRUST_PROXY=true` iken okunur — aksi halde
+  istemci bu başlığı uydurup her istekte temiz bir hız sınırı kovası açabilirdi
+- **Davet kodu:** `timingSafeCompare` ile SHA-256 özetleri üzerinden sabit sürede karşılaştırılır
 
 ## API
 
 | Yöntem | Adres                | Gövde / Açıklama                                              |
 | ------ | -------------------- | ------------------------------------------------------------- |
 | GET    | `/api/health`        | Sunucu/veritabanı/TMDb yapılandırma durumu                    |
-| POST   | `/api/auth/register` | `{ username, password, email?, displayName? }` → 201 + oturum |
+| POST   | `/api/auth/register` | `{ username, password, email?, displayName?, inviteCode? }` → 201 + oturum |
 | POST   | `/api/auth/login`    | `{ username, password }` → 200 + oturum çerezi                |
 | POST   | `/api/auth/logout`   | 204, oturumu veritabanından siler ve çerezi temizler          |
-| GET    | `/api/auth/me`       | Oturum yoksa `{ user: null }` (401 değil)                     |
+| GET    | `/api/auth/me`       | Oturum yoksa `{ user: null }` (401 değil) + `registration.mode` |
 | POST   | `/api/auth/password` | `{ currentPassword, newPassword }`, diğer oturumları düşürür  |
+
+`inviteCode` yalnızca `REGISTRATION_MODE=invite` iken zorunludur. `/api/auth/me`
+yanıtındaki `registration.mode` giriş ekranının "Kayıt ol" sekmesini ve davet kodu
+alanını çizmek için kullanılır; kodun kendisi istemciye asla gönderilmez.
 
 TMDb proxy uçları (**tümü oturum gerektirir** — API anahtarının serbest kullanımını engellemek için):
 
@@ -160,7 +170,50 @@ Kayıt alanları: `tmdbId`, `mediaType`, `title`, `originalTitle`, `overview`, `
 - Kullanıcı adı: 3-32 karakter, `a-z A-Z 0-9 . _ -`
 - Şifre: en az 8 karakter, kullanıcı adıyla aynı olamaz
 - Giriş: aynı IP + kullanıcı adı için 15 dakikada 10 başarısız deneme (aşılırsa 429 + `Retry-After`)
+- Giriş: kullanıcı adından bağımsız olarak IP başına 15 dakikada 60 deneme — kullanıcı
+  adını değiştirerek sınırı aşmayı ve `scrypt` ile CPU tüketmeyi engeller, başarılı
+  girişte sıfırlanmaz
 - Kayıt: IP başına saatte 20 deneme / 5 oluşturulan hesap
+
+## Canlıya alma
+
+Uygulama uzun ömürlü bir Node süreci ve yazılabilir bir disk ister; sunucusuz
+platformlarda (Vercel, Netlify) çalışmaz. Kendi sunucunuzda şu ayarlar gerekir:
+
+| Değişken            | Canlı değer            | Neden                                                            |
+| ------------------- | ---------------------- | ---------------------------------------------------------------- |
+| `NODE_ENV`          | `production`           | Erişim logları, üretim önbellek başlıkları, `Secure` çerez        |
+| `TRUST_PROXY`       | `true`                 | Ters proxy arkasındaysanız; **yoksa açmayın**                     |
+| `REGISTRATION_MODE` | `invite` veya `closed` | Herkese açık bırakmak yabancıların TMDb kotanızı harcaması demek  |
+| `INVITE_CODE`       | uzun rastgele değer    | `invite` modunda zorunlu                                          |
+| `HOST`              | `127.0.0.1`            | Proxy aynı makinedeyse; konteynerde `0.0.0.0`                     |
+
+Oturum çerezi üretimde `Secure` işaretlendiği için **HTTPS zorunludur**: düz HTTP
+üzerinde tarayıcı çerezi hiç göndermez ve giriş sessizce başarısız olur. En kısa yol
+Caddy:
+
+```caddyfile
+gunluk.example.com {
+    reverse_proxy 127.0.0.1:3000
+}
+```
+
+Caddy sertifikayı kendi alır, yeniler ve `X-Forwarded-For` başlığını kendisi yazar.
+HTTPS'in bulunmadığı bir iç ağda yayın yapıyorsanız `COOKIE_SECURE=false` ile bilinçli
+olarak kapatabilirsiniz.
+
+Hatalı yapılandırma canlıda değil **açılışta** yakalanır: geçersiz `REGISTRATION_MODE`,
+kodsuz `invite` modu veya `TRUST_PROXY=ture` gibi bir yazım hatası sunucuyu başlatmaz.
+
+### Şifre sıfırlama
+
+"Şifremi unuttum" akışı yok (e-posta göndermek harici bir servis gerektirirdi). Şifreyi
+sunucuya erişebilen kişi sıfırlar; işlem kullanıcının tüm oturumlarını düşürür:
+
+```bash
+npm run reset-password -- kullaniciadi              # rastgele şifre üretir ve yazdırır
+npm run reset-password -- kullaniciadi YeniSifre123 # belirli bir şifre atar
+```
 
 ## Testler
 

@@ -716,6 +716,19 @@ a:hover {
   text-align: center;
 }
 
+/* Kayit kapaliyken sekme cubugunun yerini alan not */
+.auth__note {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .auth__tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;

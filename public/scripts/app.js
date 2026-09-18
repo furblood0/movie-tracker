@@ -22,8 +22,15 @@ const viewHost = document.querySelector('#view');
 const userMenuHost = document.querySelector('#user-menu');
 const navButtons = [...document.querySelectorAll('[data-nav]')];
 
-/** @type {{ user: object | null, route: 'library' | 'discover', libraryView: HTMLElement | null }} */
-const state = { user: null, route: 'library', libraryView: null };
+/**
+ * @type {{
+ *   user: object | null,
+ *   route: 'library' | 'discover',
+ *   libraryView: HTMLElement | null,
+ *   registrationMode: 'open' | 'invite' | 'closed'
+ * }}
+ */
+const state = { user: null, route: 'library', libraryView: null, registrationMode: 'open' };
 
 // ---------------------------------------------------------------------
 // Gorunum yonetimi
@@ -179,7 +186,12 @@ function showAuthScreen() {
   appBar.hidden = true;
 
   clear(viewHost);
-  viewHost.append(createAuthView({ onAuthenticated: showAppScreen }));
+  viewHost.append(
+    createAuthView({
+      onAuthenticated: showAppScreen,
+      registrationMode: state.registrationMode,
+    }),
+  );
 }
 
 /** Oturum acilmis kullaniciya uygulamayi gosterir. */
@@ -210,7 +222,10 @@ for (const button of navButtons) {
 // Acilis
 // ---------------------------------------------------------------------
 try {
-  const { user } = await api.me();
+  const { user, registration } = await api.me();
+  // Sunucu kayit modunu buradan bildirir; giris ekrani buna gore cizilir.
+  if (registration?.mode) state.registrationMode = registration.mode;
+
   if (user) showAppScreen(user);
   else showAuthScreen();
 } catch (error) {

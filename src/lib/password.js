@@ -8,7 +8,7 @@
  *  - Duz sifre hicbir yerde saklanmaz veya loglanmaz.
  */
 
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
 const ALGORITHM = 'scrypt';
 const KEY_LENGTH = 64; // uretilecek anahtarin bayt uzunlugu
@@ -70,4 +70,20 @@ const DUMMY_RECORD = hashPassword(randomBytes(24).toString('hex'));
 export function fakeVerify(plainPassword) {
   verifyPassword(plainPassword, DUMMY_RECORD);
   return false;
+}
+
+/**
+ * Iki kisa sirri sabit surede karsilastirir (ornek: davet kodu).
+ *
+ * Once SHA-256 ozetleri alinir; boylece girdiler farkli uzunlukta olsa bile
+ * karsilastirma hep ayni maliyettedir ve dogru degerin uzunlugu yanit
+ * suresinden anlasilamaz.
+ *
+ * @param {string} candidate
+ * @param {string} expected
+ */
+export function timingSafeCompare(candidate, expected) {
+  const candidateDigest = createHash('sha256').update(String(candidate), 'utf8').digest();
+  const expectedDigest = createHash('sha256').update(String(expected), 'utf8').digest();
+  return timingSafeEqual(candidateDigest, expectedDigest);
 }
