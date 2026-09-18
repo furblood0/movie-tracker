@@ -126,7 +126,6 @@
   /* Durum renkleri: altin one ciksin diye bilincli olarak dusuk doygunluk */
   --color-watched: #7fa87f;
   --color-watchlist: #8aa0c4;
-  --color-dropped: #7a7873;
 
   /* Olcek */
   --space-1: 0.25rem;
@@ -592,6 +591,16 @@ a:hover {
   cursor: pointer;
 }
 
+/* Acilir listeyi tarayici cizer ve secenekler kendi rengi yoksa SELECT'in o
+   anki arka planini kullanir. Filtre cubugundaki select'ler seffaf oldugu
+   icin (yalnizca :hover'da doluyorlar) liste de saydam kaliyordu: imlec
+   kutudan cikar cikmaz arkadaki afisler seceneklerin icinden goruluyordu.
+   Secenekleri acikca boyayarak listeyi select'in durumundan bagimsiz kiliyoruz. */
+.select option {
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+}
+
 /* Segmentli secim (durum secici) */
 .segmented {
   display: flex;
@@ -1017,10 +1026,6 @@ a:hover {
   --status-color: var(--color-watchlist);
 }
 
-.card__status[data-status="dropped"] {
-  --status-color: var(--color-dropped);
-}
-
 /* Afis ustu, alt satir: puan (tek yerde) ve icerik turu */
 .card__poster-foot {
   position: absolute;
@@ -1226,10 +1231,6 @@ a:hover {
 
 .badge--watchlist {
   color: var(--color-watchlist);
-}
-
-.badge--dropped {
-  color: var(--color-dropped);
 }
 
 .badge--type {

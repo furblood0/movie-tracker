@@ -185,6 +185,13 @@ await test('gecersiz status reddedilir', async () => {
   assert.equal(res.body.details.field, 'status');
 });
 
+// v2 migrasyonuyla kaldirildi: yalnizca watched / watchlist kabul edilir
+await test('kaldirilan "dropped" durumu reddedilir', async () => {
+  const res = await alice.request('POST', '/api/entries', entryPayload({ status: 'dropped' }));
+  assert.equal(res.status, 400);
+  assert.equal(res.body.details.field, 'status');
+});
+
 await test('gelecek tarihli izleme tarihi reddedilir', async () => {
   const res = await alice.request('POST', '/api/entries', entryPayload({ status: 'watched', watchedAt: '2099-01-01' }));
   assert.equal(res.status, 400);
@@ -300,7 +307,7 @@ await test('filtre veri kumesi hazirlaniyor', async () => {
   const dataset = [
     { title: 'Aksiyon Filmi', status: 'watched', rating: 9, genres: [{ id: 28, name: 'Aksiyon' }] },
     { title: 'Dram Filmi', status: 'watched', rating: 6, genres: [{ id: 18, name: 'Dram' }] },
-    { title: 'Birakilan Dizi', mediaType: 'tv', status: 'dropped', rating: 3, genres: [{ id: 18, name: 'Dram' }] },
+    { title: 'Kotu Dizi', mediaType: 'tv', status: 'watched', rating: 3, genres: [{ id: 18, name: 'Dram' }] },
     { title: 'Izlenecek Dizi', mediaType: 'tv', status: 'watchlist', genres: [{ id: 35, name: 'Komedi' }] },
     { title: 'Puansiz Film', status: 'watched', genres: [{ id: 35, name: 'Komedi' }] },
   ];
@@ -316,7 +323,7 @@ await test('filtre veri kumesi hazirlaniyor', async () => {
 
 await test('duruma gore filtreleme', async () => {
   const res = await bob.request('GET', '/api/entries?status=watched');
-  assert.equal(res.body.total, 3);
+  assert.equal(res.body.total, 4);
   assert.ok(res.body.items.every((item) => item.status === 'watched'));
 });
 

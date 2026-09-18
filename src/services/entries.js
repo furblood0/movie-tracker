@@ -14,7 +14,7 @@ import { HttpError } from '../lib/http.js';
 const POSTER_SIZE = 'w342';
 
 /** Izin verilen degerler (veritabanindaki CHECK kisitlariyla ayni). */
-export const ENTRY_STATUSES = /** @type {const} */ (['watched', 'watchlist', 'dropped']);
+export const ENTRY_STATUSES = /** @type {const} */ (['watched', 'watchlist']);
 export const MEDIA_TYPES = /** @type {const} */ (['movie', 'tv']);
 
 /**
@@ -144,7 +144,7 @@ function replaceGenres(entryId, genres) {
  * @param {{
  *   tmdbId: number, mediaType: 'movie' | 'tv', title: string, originalTitle?: string | null,
  *   overview?: string | null, posterPath?: string | null, releaseYear?: number | null,
- *   status: 'watched' | 'watchlist' | 'dropped', rating?: number | null, review?: string | null,
+ *   status: 'watched' | 'watchlist', rating?: number | null, review?: string | null,
  *   watchedAt?: string | null, favorite?: boolean, genres?: { id: number, name: string }[]
  * }} input
  */

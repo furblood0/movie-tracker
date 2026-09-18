@@ -22,4 +22,9 @@ export const migrations = [
     name: 'initial-schema',
     sql: readFileSync(path.join(CURRENT_DIR, 'schema.sql'), 'utf8'),
   },
+  {
+    version: 2,
+    name: 'remove-dropped-status',
+    sql: readFileSync(path.join(CURRENT_DIR, 'v2-remove-dropped-status.sql'), 'utf8'),
+  },
 ];

@@ -15,7 +15,7 @@ import { confirmDialog, openModal } from './modal.js';
 import { createRatingInput } from './stars.js';
 import { showApiError, showToast } from './toast.js';
 
-const STATUS_ORDER = ['watchlist', 'watched', 'dropped'];
+const STATUS_ORDER = ['watchlist', 'watched'];
 
 /**
  * Kullanicinin YEREL tarihi (YYYY-MM-DD) - tarih alaninin ust siniri.

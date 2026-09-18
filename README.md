@@ -64,6 +64,7 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 │   │   ├── index.js        # Bağlantı, PRAGMA'lar, migrasyon çalıştırıcı, transaction
 │   │   ├── migrations.js   # Sürüm listesi (PRAGMA user_version ile takip)
 │   │   ├── schema.sql      # v1 şeması
+│   │   ├── v2-remove-dropped-status.sql  # v2: "Bırakıldı" durumunun kaldırılması
 │   │   └── reset.js        # Geliştirme: veritabanını sil
 │   ├── lib/
 │   │   ├── http.js         # JSON yanıt, gövde okuma, çerez, HttpError
@@ -75,7 +76,7 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 └── data/                   # SQLite dosyası (git'e girmez)
 ```
 
-## Veritabanı şeması (v1)
+## Veritabanı şeması (v2)
 
 | Tablo          | Amaç                                                                  |
 | -------------- | --------------------------------------------------------------------- |
@@ -86,6 +87,14 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 | `tmdb_cache`   | TMDb yanıtlarının kısa süreli önbelleği (kota tasarrufu)              |
 
 Detaylı açıklamalar ve kısıtlar için `src/db/schema.sql` dosyasına bakın.
+
+Şema sürümü `PRAGMA user_version` ile takip edilir; uygulanmış migrasyonlar hiç
+değiştirilmez, değişiklikler yeni bir sürüm dosyasıyla gelir:
+
+| Sürüm | Dosya                          | İçerik                                                                    |
+| ----- | ------------------------------ | ------------------------------------------------------------------------- |
+| v1    | `schema.sql`                   | Başlangıç şeması                                                          |
+| v2    | `v2-remove-dropped-status.sql` | `status` yalnızca `watched`/`watchlist`; eski `dropped` kayıtları silinir |
 
 ## Güvenlik önlemleri
 
@@ -131,7 +140,7 @@ TMDb proxy uçları (**tümü oturum gerektirir** — API anahtarının serbest 
 
 | Parametre               | Değerler                                                    |
 | ----------------------- | ----------------------------------------------------------- |
-| `status`                | `watched` \| `watchlist` \| `dropped`                       |
+| `status`                | `watched` \| `watchlist`                                    |
 | `mediaType`             | `movie` \| `tv`                                             |
 | `genreId`               | TMDb tür kimliği (örn. `18`)                                |
 | `minRating`/`maxRating` | 1-10                                                        |
@@ -194,7 +203,7 @@ kaynağı içeriğin kendisi olur.
 ### Ekranlar
 
 - **Giriş / Kayıt:** tek kartta sekmeli form; sunucudan gelen alan bazlı hatalar ilgili alanın altına yazılır
-- **Günlüğüm:** durum çipleri, tür/kategori/puan/sıralama menüleri, metin arama, sayfalama
+- **Günlüğüm:** Tümü / İzlendi / İzlenecek / Favoriler sekmeleri, tür ve sıralama menüleri, metin arama, sayfalama
 - **Keşfet:** TMDb arama (400 ms debounce), haftanın öne çıkanları, detay modalı (süre, sezon, oyuncular)
 - **Kayıt formu:** durum seçici, yarım yıldız puanlama (fare + klavye), izleme tarihi, not, favori
 - **Erişilebilirlik:** modalda odak tuzağı ve Esc, `aria-live` bildirimler, klavyeyle puanlama (ok tuşları), `prefers-reduced-motion` desteği

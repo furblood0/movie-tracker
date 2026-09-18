@@ -10,11 +10,17 @@ import { createEmptyState, createEntryCard, createSkeletonCards } from './card.j
 import { clear, debounce, el } from './dom.js';
 import { openEntryForm } from './entry-form.js';
 
-const STATUS_FILTERS = [
+/**
+ * Listenin sekmeleri. Favoriler de buraya dahil: kullanici acisindan bu da
+ * gunlugun bir kesiti, kenarda duran ayri bir anahtar degil. Bu yuzden
+ * `state.view` tek bir deger tutar; istege cevrilirken `status` mi yoksa
+ * `favorite` mi oldugu `toQuery()` icinde ayrilir.
+ */
+const VIEW_FILTERS = [
   { value: '', label: 'Tümü' },
   { value: 'watched', label: 'İzlendi' },
   { value: 'watchlist', label: 'İzlenecek' },
-  { value: 'dropped', label: 'Bırakıldı' },
+  { value: 'favorite', label: '\u2665 Favoriler' },
 ];
 
 const SORT_OPTIONS = [
@@ -33,12 +39,8 @@ const SORT_OPTIONS = [
  */
 export function createLibraryView({ onNavigateDiscover }) {
   const state = {
-    status: '',
+    view: '',
     mediaType: '',
-    genreId: '',
-    minRating: '',
-    favorite: false,
-    unrated: false,
     search: '',
     sort: 'updated',
     order: 'desc',
@@ -50,24 +52,32 @@ export function createLibraryView({ onNavigateDiscover }) {
   const resultCount = el('p', { class: 'result-count label-mono', 'aria-live': 'polite' });
   const paginationHost = el('div');
 
-  // --- Durum cipleri ---
-  const chipRow = el('div', { class: 'chips', role: 'group', 'aria-label': 'Duruma göre filtrele' });
-  const chipButtons = STATUS_FILTERS.map((filter) => {
+  // --- Gorunum sekmeleri (durum + favoriler) ---
+  const chipRow = el('div', { class: 'chips', role: 'group', 'aria-label': 'Listeyi süz' });
+  const chipButtons = VIEW_FILTERS.map((filter) => {
     const chip = el('button', {
       type: 'button',
-      class: `chip${filter.value === state.status ? ' is-active' : ''}`,
+      class: `chip${filter.value === state.view ? ' is-active' : ''}`,
       text: filter.label,
+      'aria-pressed': String(filter.value === state.view),
       onclick: () => {
-        state.status = filter.value;
-        chipButtons.forEach((button, index) => {
-          button.classList.toggle('is-active', STATUS_FILTERS[index].value === filter.value);
-        });
+        state.view = filter.value;
+        syncChips();
         resetAndLoad();
       },
     });
     chipRow.append(chip);
     return chip;
   });
+
+  /** Aktif sekmeyi isaretler. */
+  function syncChips() {
+    chipButtons.forEach((button, index) => {
+      const isActive = VIEW_FILTERS[index].value === state.view;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  }
 
   // --- Acilir menuler ---
   const mediaTypeSelect = createSelect('Tür', [
@@ -76,18 +86,6 @@ export function createLibraryView({ onNavigateDiscover }) {
     { value: 'tv', label: 'Sadece dizi' },
   ], (value) => {
     state.mediaType = value;
-    resetAndLoad();
-  });
-
-  const genreSelect = createSelect('Kategori', [{ value: '', label: 'Tüm kategoriler' }], (value) => {
-    state.genreId = value;
-    resetAndLoad();
-  });
-
-  const minRatingSelect = createSelect('Puan', buildRatingOptions(), (value) => {
-    // "unrated" ozel bir deger: puansiz kayitlari getirir
-    state.unrated = value === 'unrated';
-    state.minRating = value === 'unrated' ? '' : value;
     resetAndLoad();
   });
 
@@ -109,19 +107,6 @@ export function createLibraryView({ onNavigateDiscover }) {
     onclick: () => {
       state.order = state.order === 'desc' ? 'asc' : 'desc';
       orderButton.textContent = state.order === 'desc' ? '\u2193' : '\u2191';
-      resetAndLoad();
-    },
-  });
-
-  const favoriteChip = el('button', {
-    type: 'button',
-    class: 'chip',
-    text: '\u2665 Favoriler',
-    'aria-pressed': 'false',
-    onclick: () => {
-      state.favorite = !state.favorite;
-      favoriteChip.classList.toggle('is-active', state.favorite);
-      favoriteChip.setAttribute('aria-pressed', String(state.favorite));
       resetAndLoad();
     },
   });
@@ -154,14 +139,12 @@ export function createLibraryView({ onNavigateDiscover }) {
   const filters = el(
     'section',
     { class: 'filters', 'aria-label': 'Filtreler' },
-    el('div', { class: 'filters__row' }, chipRow, favoriteChip, resultCount),
+    el('div', { class: 'filters__row' }, chipRow, resultCount),
     el(
       'div',
       { class: 'filters__row filters__row--meta' },
       searchInput,
       mediaTypeSelect.wrapper,
-      genreSelect.wrapper,
-      minRatingSelect.wrapper,
       sortSelect.wrapper,
       orderButton,
       clearFiltersButton,
@@ -200,24 +183,16 @@ export function createLibraryView({ onNavigateDiscover }) {
   /** Filtreleri baslangic haline dondurur. */
   function resetFilters() {
     Object.assign(state, {
-      status: '',
+      view: '',
       mediaType: '',
-      genreId: '',
-      minRating: '',
-      favorite: false,
-      unrated: false,
       search: '',
       sort: 'updated',
       order: 'desc',
       page: 1,
     });
 
-    chipButtons.forEach((button, index) => button.classList.toggle('is-active', STATUS_FILTERS[index].value === ''));
-    favoriteChip.classList.remove('is-active');
-    favoriteChip.setAttribute('aria-pressed', 'false');
+    syncChips();
     mediaTypeSelect.select.value = '';
-    genreSelect.select.value = '';
-    minRatingSelect.select.value = '';
     sortSelect.select.value = 'updated';
     orderButton.textContent = '\u2193';
     searchInput.value = '';
@@ -230,26 +205,19 @@ export function createLibraryView({ onNavigateDiscover }) {
     load();
   }
 
-  /** Kullanicinin turlerini cekip kategori menusunu doldurur. */
-  async function loadGenres() {
-    try {
-      const { genres } = await api.userGenres();
-      const previousValue = genreSelect.select.value;
-
-      clear(genreSelect.select);
-      genreSelect.select.append(el('option', { value: '', text: 'Tüm kategoriler' }));
-      for (const genre of genres) {
-        genreSelect.select.append(
-          el('option', { value: String(genre.id), text: `${genre.name} (${genre.count})` }),
-        );
-      }
-      // Secili kategori halen listede varsa korunur
-      genreSelect.select.value = [...genreSelect.select.options].some((option) => option.value === previousValue)
-        ? previousValue
-        : '';
-    } catch {
-      // Kategori menusu ikincil bir ozellik: hata durumunda sessizce gecilir.
-    }
+  /** Gorunum durumunu API sorgu parametrelerine cevirir. */
+  function toQuery() {
+    return {
+      // "favorite" bir durum degil, ayri bir parametre: sekmeyi burada acariz.
+      status: state.view === 'favorite' ? null : state.view || null,
+      favorite: state.view === 'favorite' ? 'true' : null,
+      mediaType: state.mediaType || null,
+      search: state.search || null,
+      sort: state.sort,
+      order: state.order,
+      page: state.page,
+      limit: state.limit,
+    };
   }
 
   // Ayni anda birden fazla istek havada olabilir (hizli filtre degisimi veya
@@ -267,19 +235,7 @@ export function createLibraryView({ onNavigateDiscover }) {
     clear(paginationHost);
 
     try {
-      const response = await api.listEntries({
-        status: state.status || null,
-        mediaType: state.mediaType || null,
-        genreId: state.genreId || null,
-        minRating: state.minRating || null,
-        favorite: state.favorite ? 'true' : null,
-        unrated: state.unrated ? 'true' : null,
-        search: state.search || null,
-        sort: state.sort,
-        order: state.order,
-        page: state.page,
-        limit: state.limit,
-      });
+      const response = await api.listEntries(toQuery());
 
       // Bu istek beklerken daha yenisi baslatildiysa sonucu yok say.
       if (requestId !== requestSequence) return;
@@ -315,14 +271,7 @@ export function createLibraryView({ onNavigateDiscover }) {
     clear(grid);
     clear(paginationHost);
 
-    const hasActiveFilter =
-      state.status !== '' ||
-      state.mediaType !== '' ||
-      state.genreId !== '' ||
-      state.minRating !== '' ||
-      state.favorite ||
-      state.unrated ||
-      state.search !== '';
+    const hasActiveFilter = state.view !== '' || state.mediaType !== '' || state.search !== '';
 
     if (response.total === 0) {
       resultCount.textContent = '';
@@ -365,15 +314,8 @@ export function createLibraryView({ onNavigateDiscover }) {
               mode: 'edit',
               source: selected,
               entry: selected,
-              // Kaydetme/silme sonrasi liste ve kategori menusu tazelenir
-              onSaved: () => {
-                load();
-                loadGenres();
-              },
-              onDeleted: () => {
-                load();
-                loadGenres();
-              },
+              onSaved: () => load(),
+              onDeleted: () => load(),
             }),
         }),
       );
@@ -419,13 +361,9 @@ export function createLibraryView({ onNavigateDiscover }) {
 
   // Ilk yukleme
   load();
-  loadGenres();
 
   // Diger gorunumler (Kesfet) kayit ekledikten sonra tazeleyebilsin
-  view.refresh = () => {
-    load();
-    loadGenres();
-  };
+  view.refresh = () => load();
 
   return view;
 }
@@ -440,16 +378,4 @@ function createSelect(label, options, onChange) {
 
   const wrapper = el('div', { class: 'filters__group' }, el('span', { text: label }), select);
   return { wrapper, select };
-}
-
-/** Puan filtresi secenekleri. */
-function buildRatingOptions() {
-  const options = [
-    { value: '', label: 'Tüm puanlar' },
-    { value: 'unrated', label: 'Puanlanmamış' },
-  ];
-  for (let threshold = 9; threshold >= 5; threshold -= 1) {
-    options.push({ value: String(threshold), label: `${threshold}+ puan` });
-  }
-  return options;
 }
