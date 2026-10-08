@@ -403,11 +403,77 @@ a:hover {
 }
 
 .user-menu {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-3);
+}
+
+.account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: 0.2rem 0.55rem 0.2rem 0.2rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.account-trigger:hover,
+.account-trigger[aria-expanded='true'] {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+.account-trigger__caret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-text-faint);
+}
+
+.account-trigger[aria-expanded='true'] .account-trigger__caret {
+  transform: rotate(180deg);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  min-width: 12.5rem;
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.account-menu__item {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.account-menu__item:hover {
+  background: var(--color-surface-2);
+  text-decoration: none;
+}
+
+.account-menu__item--danger {
+  color: var(--color-danger);
 }
 
 .user-menu__name {
@@ -1685,12 +1751,20 @@ a:hover {
   }
 
   .app-nav__link {
+    display: flex;
     flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
     text-align: center;
   }
 
   .user-menu__name {
-    display: none;
+    max-width: 9ch;
+  }
+
+  .page-head__title {
+    font-size: clamp(2rem, 9vw, 2.6rem);
   }
 
   .card-grid {
@@ -1698,10 +1772,92 @@ a:hover {
     gap: var(--space-3);
   }
 
+  .card__stub-action {
+    min-height: 44px;
+    padding-inline: 0.7rem;
+  }
+
+  .card__footer .btn {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .chip {
+    min-height: 44px;
+  }
+
+  .input,
+  .select,
+  .textarea {
+    /* 16px altinda iOS odaklaninca sayfayi yakinlastirir; not yazmayi bozar. */
+    font-size: 16px;
+  }
+
+  .textarea {
+    min-height: 9rem;
+  }
+
+  .segmented__label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rating {
+    align-items: stretch;
+  }
+
+  .rating__stars {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rating__star {
+    flex: 1;
+    width: auto;
+    max-width: 36px;
+    height: 44px;
+  }
+
+  .modal-overlay {
+    align-items: end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: 92dvh;
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
   .modal__body,
   .modal__header,
   .modal__footer {
     padding-inline: var(--space-4);
+  }
+
+  .modal__footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  .modal__footer > span:empty {
+    display: none;
+  }
+
+  .modal__footer .btn {
+    min-height: 44px;
+  }
+
+  .modal__footer .btn--primary {
+    grid-column: 1 / -1;
+  }
+
+  .modal__footer .btn:first-child {
+    margin-right: 0;
   }
 
   .filters__group {
@@ -1712,6 +1868,13 @@ a:hover {
   .filters__group .input {
     flex: 1;
     min-width: 0;
+  }
+
+  .toast-stack {
+    right: var(--space-3);
+    left: var(--space-3);
+    bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    width: auto;
   }
 }
 
@@ -1958,7 +2121,7 @@ a:hover {
   gap: var(--space-3) var(--space-5);
   width: min(var(--content-width), 100%);
   margin: 0 auto;
-  padding: var(--space-5) var(--space-4) var(--space-6);
+  padding: var(--space-5) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
   color: var(--color-text-faint);
   font-size: 0.8rem;
@@ -1981,6 +2144,10 @@ a:hover {
 }
 
 @media (max-width: 720px) {
+  .landing__title {
+    font-size: clamp(2.5rem, 12vw, 3.4rem);
+  }
+
   .landing__steps,
   .landing__grid,
   .stat-grid {

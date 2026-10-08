@@ -129,6 +129,9 @@ export function openEntryForm({ mode, source, entry, onSaved, onDeleted }) {
     placeholder: 'Bu yapım hakkında notunuz... (isteğe bağlı)',
   });
   reviewInput.value = initial.review ?? '';
+  reviewInput.addEventListener('focus', () => {
+    reviewInput.scrollIntoView({ block: 'center' });
+  });
 
   const favoriteInput = el('input', { type: 'checkbox', checked: Boolean(initial.favorite) });
 

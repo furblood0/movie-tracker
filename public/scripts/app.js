@@ -4,7 +4,7 @@
  * Sorumluluklari:
  *  - Acilista oturumu sorgular (/api/auth/me) ve adrese gore ekrani cizer
  *  - Adres cubugu gecisleri (History API): /giris, /gunluk, /kesfet, /ozet, ...
- *  - Ust bardaki kullanici menusu: sifre degistirme, hesap silme, cikis
+ *  - Ust bardaki profil: ada tiklaninca sifre, hesap silme ve cikis acilir
  *
  * Sayfa yenilenmez. Gercek href'ler durur; sade sol tiklamada gecis JS ile olur,
  * boylece yeni sekmede acmak da calisir.
@@ -26,6 +26,9 @@ const publicBar = document.querySelector('#public-bar');
 const publicRegister = document.querySelector('#public-register');
 const viewHost = document.querySelector('#view');
 const navLinks = [...document.querySelectorAll('.app-nav__link')];
+
+/** Acik profil menusunu kapatan islev. renderUserMenu her cizimde yeniler. */
+let closeAccountMenu = () => {};
 
 /**
  * Adres -> ekran. `auth` oturum ister, `guestOnly` oturum varken gunluge gider.
@@ -175,32 +178,69 @@ function renderUserMenu(user) {
   clear(userMenuHost);
 
   const initials = (user.displayName ?? user.username).slice(0, 1).toUpperCase();
+  const label = user.displayName ?? user.username;
 
-  userMenuHost.append(
+  const trigger = el(
+    'button',
+    {
+      type: 'button',
+      class: 'account-trigger',
+      'aria-haspopup': 'menu',
+      'aria-expanded': 'false',
+      'aria-label': 'Profil menüsü',
+    },
     el('span', { class: 'avatar', 'aria-hidden': 'true', text: initials }),
-    el('span', { class: 'user-menu__name', title: user.username, text: user.displayName ?? user.username }),
-    el('button', { type: 'button', class: 'btn btn--ghost', text: 'Şifre', title: 'Şifre değiştir', onclick: openPasswordModal }),
-    el('button', {
-      type: 'button',
-      class: 'btn btn--ghost',
-      text: 'Hesabı sil',
-      onclick: openDeleteModal,
-    }),
-    el('button', {
-      type: 'button',
-      class: 'btn',
-      text: 'Çıkış',
-      onclick: async () => {
-        try {
-          await api.logout();
-        } catch {
-          // Cikis istegi basarisiz olsa da yerel durumu temizliyoruz.
-        }
-        showToast('Çıkış yapıldı.', 'success');
-        leaveApp('/');
-      },
-    }),
+    el('span', { class: 'user-menu__name', title: user.username, text: label }),
+    el('span', { class: 'account-trigger__caret', 'aria-hidden': 'true' }),
   );
+
+  const menu = el(
+    'div',
+    { class: 'account-menu', role: 'menu', hidden: true },
+    accountItem('Şifreyi değiştir', () => openPasswordModal()),
+    accountItem('Hesabı sil', () => openDeleteModal(), true),
+    accountItem('Çıkış yap', logout),
+  );
+
+  function setOpen(open, { focusTrigger = false } = {}) {
+    menu.hidden = !open;
+    trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) menu.querySelector('button')?.focus();
+    else if (focusTrigger) trigger.focus();
+  }
+
+  trigger.addEventListener('click', () => setOpen(menu.hidden));
+
+  closeAccountMenu = ({ focusTrigger = false } = {}) => {
+    if (menu.hidden) return;
+    setOpen(false, { focusTrigger });
+  };
+
+  userMenuHost.append(trigger, menu);
+}
+
+/** Profil menusundeki tek satir. */
+function accountItem(text, action, danger = false) {
+  return el('button', {
+    type: 'button',
+    class: danger ? 'account-menu__item account-menu__item--danger' : 'account-menu__item',
+    role: 'menuitem',
+    text,
+    onclick: () => {
+      closeAccountMenu();
+      action();
+    },
+  });
+}
+
+async function logout() {
+  try {
+    await api.logout();
+  } catch {
+    // Cikis istegi basarisiz olsa da yerel durumu temizliyoruz.
+  }
+  showToast('Çıkış yapıldı.', 'success');
+  leaveApp('/');
 }
 
 /** Oturumu yerel olarak kapatip herkese acik bir sayfaya gecer. */
@@ -311,6 +351,8 @@ setUnauthorizedHandler(() => {
 
 document.addEventListener('click', (event) => {
   if (!(event.target instanceof Element)) return;
+  if (!event.target.closest('#user-menu')) closeAccountMenu();
+
   const link = event.target.closest('a[href]');
   if (!link) return;
   if (link.target === '_blank' || link.hasAttribute('download')) return;
@@ -325,7 +367,14 @@ document.addEventListener('click', (event) => {
   navigate(path);
 });
 
-window.addEventListener('popstate', () => render());
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeAccountMenu({ focusTrigger: true });
+});
+
+window.addEventListener('popstate', () => {
+  closeAccountMenu();
+  render();
+});
 
 try {
   const { user, registration, site } = await api.me();
