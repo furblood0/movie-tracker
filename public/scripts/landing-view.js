@@ -29,19 +29,33 @@ export function createLandingView({ registrationMode = 'open' } = {}) {
     el(
       'div',
       { class: 'landing__hero' },
-      el('p', { class: 'page-head__eyebrow label-mono', text: 'Kişisel sinema defteri' }),
-      el('h1', { class: 'landing__title', text: 'İzlediğin her şey, tek defterde.' }),
-      el('p', {
-        class: 'landing__lead',
-        text: 'Film ve dizileri puanla, kısa bir not düş, izleyeceklerini kaybetme. Arama TMDb arşivinden gelir; puanların ve notların bu günlükte kalır.',
-      }),
       el(
         'div',
-        { class: 'landing__actions' },
-        registerLink,
-        el('a', { class: 'btn', href: '/giris', text: 'Giriş yap' }),
+        { class: 'landing__copy' },
+        el('p', { class: 'page-head__eyebrow label-mono', text: 'Kişisel sinema defteri' }),
+        el('h1', { class: 'landing__title', text: 'İzlediğin her şey, tek defterde.' }),
+        el('p', {
+          class: 'landing__lead',
+          text: 'Film ve dizileri puanla, kısa bir not düş, izleyeceklerini kaybetme. Arama TMDb arşivinden gelir; puanların ve notların bu günlükte kalır.',
+        }),
+        el(
+          'div',
+          { class: 'landing__actions' },
+          registerLink,
+          el('a', { class: 'btn', href: '/giris', text: 'Giriş yap' }),
+        ),
+        el('p', { class: 'landing__note', text: note }),
       ),
-      el('p', { class: 'landing__note', text: note }),
+      el(
+        'figure',
+        { class: 'landing__figure' },
+        el('img', {
+          src: '/assets/hero-defter.jpg',
+          alt: 'Karanlık bir masada, kapağında sinema bileti duran siyah bir defter.',
+          width: '1024',
+          height: '571',
+        }),
+      ),
     ),
     el(
       'ol',
