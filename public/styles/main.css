@@ -612,7 +612,38 @@ a:hover {
 .field__error {
   font-size: 0.8rem;
   color: var(--color-danger);
-  min-height: 1.1em;
+}
+
+.field__error:empty {
+  display: none;
+}
+
+.field__control {
+  position: relative;
+}
+
+.field__control .input {
+  padding-right: 5.2rem;
+}
+
+.field__reveal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.field__reveal:hover {
+  color: var(--color-primary);
 }
 
 .input,
@@ -743,12 +774,29 @@ a:hover {
    --------------------------------------------------------------------- */
 .auth {
   display: grid;
-  place-items: center;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: clamp(var(--space-5), 6vw, var(--space-7));
+  align-items: center;
   padding: var(--space-6) 0 var(--space-5);
 }
 
-.auth__card {
-  width: min(420px, 100%);
+.auth__title {
+  max-width: 11ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.8rem, 5vw, 4.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+}
+
+.auth__lead {
+  max-width: 28rem;
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+}
+
+.auth__panel {
   padding: clamp(var(--space-5), 4vw, var(--space-6));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -756,77 +804,23 @@ a:hover {
   box-shadow: var(--shadow-lg);
 }
 
-.auth__brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
+.auth__heading {
   font-family: var(--font-display);
-  font-size: 1.9rem;
+  font-weight: 400;
+  font-size: 2rem;
 }
 
-.auth__brand svg {
-  width: 34px;
-  height: 34px;
-  fill: none;
-  stroke: var(--color-primary);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-}
-
-.auth__brand .brand__mark-perf {
-  stroke-dasharray: 2 3;
-  stroke-linecap: round;
-  opacity: 0.7;
-}
-
-.auth__tagline {
+.auth__sub {
+  margin-top: var(--space-2);
   margin-bottom: var(--space-5);
-  font-size: 0.92rem;
   color: var(--color-text-muted);
-  text-align: center;
 }
 
-/* Kayit kapaliyken sekme cubugunun yerini alan not */
-.auth__note {
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-3);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+.auth__note,
+.auth__switch {
+  margin-top: var(--space-4);
   color: var(--color-text-faint);
-  text-align: center;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.auth__tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-1);
-  margin-bottom: var(--space-5);
-  padding: var(--space-1);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.auth__tab {
-  padding: var(--space-2);
   font-size: 0.9rem;
-  color: var(--color-text-muted);
-  background: transparent;
-  border: 0;
-  border-radius: calc(var(--radius-sm) - 2px);
-  cursor: pointer;
-  transition: background var(--transition), color var(--transition);
-}
-
-.auth__tab.is-active {
-  color: var(--color-on-primary);
-  font-weight: 600;
-  background: var(--color-primary);
 }
 
 .auth__form {
@@ -1765,6 +1759,20 @@ a:hover {
 
   .page-head__title {
     font-size: clamp(2rem, 9vw, 2.6rem);
+  }
+
+  .auth {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    padding-top: var(--space-4);
+  }
+
+  .auth__title {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
+  .auth__lead {
+    display: none;
   }
 
   .card-grid {

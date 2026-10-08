@@ -263,7 +263,7 @@ kaynağı içeriğin kendisi olur.
 
 - **Karşılama:** oturum yokken ürünün ne olduğu. Adresler: `/`, `/giris`, `/kayit`
 - **Gizlilik ve koşullar:** `/gizlilik`, `/kosullar`. İletişim adresi `CONTACT_EMAIL` ile gelir
-- **Giriş / Kayıt:** tek kartta sekmeli form; sunucudan gelen alan bazlı hatalar ilgili alanın altına yazılır
+- **Giriş / Kayıt:** kullanıcı adı ve şifre. E-posta sorulmaz. Davet kodu yalnızca davet modunda. Solda editoryal satır, sağda form
 - **Günlüğüm** (`/gunluk`): Tümü / İzlendi / İzlenecek / Favoriler sekmeleri, tür ve sıralama menüleri, metin arama, sayfalama
 - **Keşfet** (`/kesfet`): TMDb arama (400 ms debounce), haftanın öne çıkanları, detay modalı (süre, sezon, oyuncular)
 - **Özet** (`/ozet`): izlenen, izlenecek, favori, ortalama puan, tür dağılımı, yıllar. Günlük JSON veya CSV indirilir
