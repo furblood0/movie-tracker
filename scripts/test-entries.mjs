@@ -464,5 +464,41 @@ await test('olmayan id 404 doner', async () => {
   assert.equal(res.status, 404);
 });
 
+await test('ozet ve disa aktarma yalnizca kendi gunlugunu verir', async () => {
+  const stats = await bob.request('GET', '/api/entries/stats');
+  assert.equal(stats.status, 200, JSON.stringify(stats.body));
+  assert.equal(stats.body.totals.watched, 4);
+  assert.equal(stats.body.totals.watchlist, 1);
+  assert.equal(stats.body.totals.averageRating, 6);
+  assert.equal(stats.body.genres[0].name, 'Dram');
+  assert.equal(stats.body.genres[0].count, 2);
+  assert.equal(stats.body.topRated[0].title, 'Aksiyon Filmi');
+  assert.equal(stats.body.years[0].count, 4);
+
+  const exported = await bob.request('GET', '/api/entries/export?format=json');
+  assert.equal(exported.status, 200);
+  assert.equal(exported.body.entries.length, 5);
+
+  const listed = await bob.request('GET', '/api/entries?search=Aksiyon');
+  const patched = await bob.request('PATCH', `/api/entries/${listed.body.items[0].id}`, {
+    review: 'Virgül, ve "tırnak"',
+  });
+  assert.equal(patched.status, 200, JSON.stringify(patched.body));
+
+  const csv = await bob.request('GET', '/api/entries/export?format=csv');
+  assert.equal(csv.status, 200);
+  assert.match(String(csv.body), /Aksiyon Filmi/);
+  assert.match(String(csv.body), /Virgül, ve ""tırnak""/);
+
+  const aliceStats = await alice.request('GET', '/api/entries/stats');
+  assert.ok(
+    !aliceStats.body.topRated.some((entry) => entry.title === 'Aksiyon Filmi'),
+    'alice bobun kaydini ozette goruyor',
+  );
+
+  const anon = await fetch(`${BASE_URL}/api/entries/stats`);
+  assert.equal(anon.status, 401);
+});
+
 console.log(`\nSonuc: ${passed} basarili, ${failed} basarisiz\n`);
 process.exit(failed === 0 ? 0 : 1);

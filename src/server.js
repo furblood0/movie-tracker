@@ -37,6 +37,12 @@ const router = createRouter();
 registerRoutes(router);
 
 /**
+ * Tarayici adres cubugundan acilan uygulama sayfalari.
+ * Bunlar diskte ayri dosya degildir; index.html kabugu JS ile cizilir.
+ */
+const APP_PATHS = new Set(['/giris', '/kayit', '/gizlilik', '/kosullar', '/gunluk', '/kesfet', '/ozet']);
+
+/**
  * Rota isleyicilerine gecirilen baglam (context) nesnesi.
  * Express'in `req/res` genisletmesi yerine acik, tahmin edilebilir bir nesne.
  *
@@ -183,7 +189,20 @@ async function handleRequest(req, res) {
     }
 
     const served = await serveStatic(req, res, url.pathname);
-    if (!served) sendText(res, 404, '404 Bulunamadı');
+    if (served) return;
+
+    // Tek sayfa uygulamasinin adresleri. Dosya olmayan her yolu index'e
+    // dusurmuyoruz; boylece /bilinmeyen-adres 404 kalir.
+    const appPath = url.pathname.length > 1 && url.pathname.endsWith('/')
+      ? url.pathname.slice(0, -1)
+      : url.pathname;
+    if (APP_PATHS.has(appPath)) {
+      const shell = await serveStatic(req, res, '/index.html');
+      if (!shell) sendText(res, 404, '404 Bulunamadı');
+      return;
+    }
+
+    sendText(res, 404, '404 Bulunamadı');
   } catch (error) {
     handleError(error, res, requestLabel);
   }

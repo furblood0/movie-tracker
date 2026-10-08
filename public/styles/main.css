@@ -178,6 +178,8 @@ html {
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-body);
@@ -288,6 +290,7 @@ a:hover {
 }
 
 .view {
+  flex: 1;
   width: min(var(--content-width), 100%);
   margin: 0 auto;
   padding: var(--space-5) var(--space-4) var(--space-7);
@@ -381,6 +384,7 @@ a:hover {
 
 .app-nav__link:hover {
   color: var(--color-text);
+  text-decoration: none;
 }
 
 /* Aktif sekme: dolgu yerine ince altin cizgi - daha sakin, daha editoryal */
@@ -400,7 +404,9 @@ a:hover {
 
 .user-menu {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-3);
 }
 
@@ -448,6 +454,7 @@ a:hover {
 
 .btn:hover:not(:disabled) {
   background: var(--color-surface-3);
+  text-decoration: none;
 }
 
 .btn:active:not(:disabled) {
@@ -671,8 +678,7 @@ a:hover {
 .auth {
   display: grid;
   place-items: center;
-  min-height: calc(100vh - 4rem);
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-6) 0 var(--space-5);
 }
 
 .auth__card {
@@ -1716,6 +1722,289 @@ a:hover {
 
   .entry-preview {
     grid-template-columns: 68px 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Karsilama, yasal metin, ozet, site altligi
+   --------------------------------------------------------------------- */
+.landing {
+  display: grid;
+  gap: var(--space-7);
+  padding-top: var(--space-6);
+}
+
+.landing__title {
+  max-width: 11ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(3.2rem, 8vw, 5.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+}
+
+.landing__lead {
+  max-width: 38rem;
+  margin-top: var(--space-4);
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+
+.landing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.landing__note,
+.landing__trust {
+  margin-top: var(--space-4);
+  max-width: 38rem;
+  color: var(--color-text-faint);
+  font-size: 0.9rem;
+}
+
+.landing__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-5) 0 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.landing__step {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.landing__step .label-mono {
+  color: var(--color-primary);
+}
+
+.landing__step strong {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.landing__step span:last-child {
+  color: var(--color-text-muted);
+}
+
+.landing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.landing__feature h2 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 400;
+}
+
+.landing__feature p {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.prose {
+  max-width: 42rem;
+  padding-top: var(--space-4);
+}
+
+.prose__updated {
+  margin-top: var(--space-3);
+  color: var(--color-text-faint);
+}
+
+.prose h2 {
+  margin-top: var(--space-6);
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 400;
+}
+
+.prose p {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.prose > p:first-of-type {
+  color: var(--color-text);
+}
+
+.stats__loading {
+  color: var(--color-text-muted);
+}
+
+.stats__body {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.stats__line {
+  color: var(--color-text-muted);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.stat-card {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.stat-card__value {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.stat-card__label {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.stats__block {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.meters {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: minmax(6rem, 9rem) 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.meter__name {
+  color: var(--color-text);
+}
+
+.meter__track {
+  display: block;
+  height: 3px;
+  background: var(--color-surface-3);
+}
+
+.meter__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.meter__count {
+  color: var(--color-text-faint);
+}
+
+.year-list,
+.top-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.year-list li,
+.top-list li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.year-list li span:last-child,
+.top-list__meta {
+  color: var(--color-text-faint);
+  font-size: 0.85rem;
+}
+
+.top-list {
+  counter-reset: rank;
+}
+
+.top-list li {
+  grid-template-columns: 3rem 1fr;
+}
+
+.top-list__score {
+  color: var(--color-primary);
+}
+
+.top-list__title {
+  display: grid;
+}
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  width: min(var(--content-width), 100%);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-faint);
+  font-size: 0.8rem;
+}
+
+.site-footer nav {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.site-footer p {
+  max-width: 46rem;
+}
+
+.noscript {
+  width: min(var(--content-width), 100%);
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-4);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 720px) {
+  .landing__steps,
+  .landing__grid,
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .landing__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .meter {
+    grid-template-columns: 1fr auto;
+  }
+
+  .meter__track {
+    grid-column: 1 / -1;
+  }
+
+  .year-list li {
+    grid-template-columns: 4rem 1fr;
+  }
+
+  .year-list li span:last-child {
+    grid-column: 2;
   }
 }
 

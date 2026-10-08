@@ -3,6 +3,8 @@
  *
  *   GET    /api/entries              listeleme + filtreleme + siralama + sayfalama
  *   GET    /api/entries/genres       kullanicinin gunlugundeki turler (filtre menusu)
+ *   GET    /api/entries/stats        ozet: sayilar, turler, yillar, en yuksek puanlar
+ *   GET    /api/entries/export       tum gunluk (format=json|csv)
  *   POST   /api/entries              yeni kayit
  *   GET    /api/entries/:id          tek kayit
  *   PATCH  /api/entries/:id          kismi guncelleme
@@ -13,7 +15,7 @@
  * kelimesi :id parametresi sanilirdi.
  */
 
-import { HttpError, sendEmpty, sendJson } from '../lib/http.js';
+import { HttpError, sendEmpty, sendJson, sendText } from '../lib/http.js';
 import {
   optionalBoolean,
   optionalDate,
@@ -31,12 +33,52 @@ import {
   createEntry,
   deleteEntry,
   findEntry,
+  journalSummary,
+  listAllEntries,
   listEntries,
   listUserGenres,
   updateEntry,
 } from '../services/entries.js';
 
 const SORT_FIELDS = /** @type {const} */ (['updated', 'created', 'rating', 'title', 'watched', 'year']);
+const CSV_COLUMNS = [
+  'id',
+  'tmdbId',
+  'mediaType',
+  'title',
+  'originalTitle',
+  'releaseYear',
+  'status',
+  'rating',
+  'review',
+  'watchedAt',
+  'favorite',
+  'genres',
+  'createdAt',
+  'updatedAt',
+];
+
+/** CSV hucresi: virgul, tirnak ve satir sonu iceren degerler tirnaklanir. */
+function csvEscape(value) {
+  if (value === null || value === undefined) return '';
+  const text = String(value);
+  if (/[",\n\r]/.test(text)) return `"${text.replaceAll('"', '""')}"`;
+  return text;
+}
+
+/** Excel'in Turkce karakterleri dogru acmasi icin UTF-8 BOM ile baslar. */
+function entriesToCsv(entries) {
+  const lines = [CSV_COLUMNS.join(',')];
+  for (const entry of entries) {
+    const cells = CSV_COLUMNS.map((column) => {
+      if (column === 'genres') return csvEscape(entry.genres.map((genre) => genre.name).join(' | '));
+      if (column === 'favorite') return entry.favorite ? '1' : '0';
+      return csvEscape(entry[column]);
+    });
+    lines.push(cells.join(','));
+  }
+  return `\uFEFF${lines.join('\n')}\n`;
+}
 const MAX_GENRES_PER_ENTRY = 20;
 const MAX_REVIEW_LENGTH = 5000;
 
@@ -159,6 +201,43 @@ export function registerEntryRoutes(router) {
   router.get('/api/entries/genres', (ctx) => {
     const user = requireAuth(ctx);
     sendJson(ctx.res, 200, { genres: listUserGenres(user.id) });
+  });
+
+  // ------------------------------------------------------------------
+  // Ozet - :id rotasindan ONCE (yoksa "stats" bir kimlik sanilir)
+  // ------------------------------------------------------------------
+  router.get('/api/entries/stats', (ctx) => {
+    const user = requireAuth(ctx);
+    sendJson(ctx.res, 200, journalSummary(user.id));
+  });
+
+  // ------------------------------------------------------------------
+  // Disa aktarma - :id rotasindan ONCE
+  // ------------------------------------------------------------------
+  router.get('/api/entries/export', (ctx) => {
+    const user = requireAuth(ctx);
+    const format = ctx.query.has('format')
+      ? requireEnum(ctx.query.get('format'), 'format', ['json', 'csv'])
+      : 'json';
+
+    const entries = listAllEntries(user.id);
+    const exportedAt = new Date().toISOString();
+
+    if (format === 'csv') {
+      sendText(ctx.res, 200, entriesToCsv(entries), {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="movie-tracker.csv"',
+        'Cache-Control': 'no-store',
+      });
+      return;
+    }
+
+    sendJson(
+      ctx.res,
+      200,
+      { exportedAt, entries },
+      { 'Content-Disposition': 'attachment; filename="movie-tracker.json"' },
+    );
   });
 
   // ------------------------------------------------------------------

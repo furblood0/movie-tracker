@@ -46,7 +46,7 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 │   │   └── fonts/          # Kendi sunucumuzdan servis edilen woff2'ler (OFL 1.1)
 │   ├── styles/main.css     # Tek stil dosyası (CSS değişkenleri + Grid/Flex)
 │   └── scripts/            # ES module'ler
-│       ├── app.js          # Önyükleyici: oturum kontrolü, görünüm geçişleri
+│       ├── app.js          # Önyükleyici: oturum, adres çubuğu, görünüm geçişleri
 │       ├── api.js          # Fetch sarmalayıcı + ApiError
 │       ├── dom.js          # el() / clear() / debounce() — innerHTML kullanılmaz
 │       ├── card.js         # Poster kartları, iskelet yükleyici, boş durumlar
@@ -54,6 +54,9 @@ migrasyonları uygulanır. Sıfırdan başlamak için: `npm run db:reset`.
 │       ├── modal.js        # Modal + odak tuzağı + onay diyaloğu
 │       ├── toast.js        # Bildirimler
 │       ├── auth-view.js    # Giriş / kayıt ekranı
+│       ├── landing-view.js # Karşılama (oturum yokken)
+│       ├── legal-view.js   # Gizlilik bildirimi ve kullanım koşulları
+│       ├── stats-view.js   # Özet: sayılar, türler, yıllar
 │       ├── entry-form.js   # Ekleme & düzenleme formu (409 akışı dahil)
 │       ├── library-view.js # Günlüğüm: filtreler, grid, sayfalama
 │       └── discover-view.js# Keşfet: TMDb arama, detay modalı
@@ -122,6 +125,7 @@ değiştirilmez, değişiklikler yeni bir sürüm dosyasıyla gelir:
 | POST   | `/api/auth/logout`   | 204, oturumu veritabanından siler ve çerezi temizler          |
 | GET    | `/api/auth/me`       | Oturum yoksa `{ user: null }` (401 değil) + `registration.mode` |
 | POST   | `/api/auth/password` | `{ currentPassword, newPassword }`, diğer oturumları düşürür  |
+| DELETE | `/api/auth/account`  | `{ username, password }` → hesabı ve günlüğü siler, `204`     |
 
 `inviteCode` yalnızca `REGISTRATION_MODE=invite` iken zorunludur. `/api/auth/me`
 yanıtındaki `registration.mode` giriş ekranının "Kayıt ol" sekmesini ve davet kodu
@@ -141,6 +145,8 @@ TMDb proxy uçları (**tümü oturum gerektirir** — API anahtarının serbest 
 | ------ | ---------------------- | -------------------------------------------------------------- |
 | GET    | `/api/entries`         | Filtreleme + sıralama + sayfalama (aşağıdaki parametreler)     |
 | GET    | `/api/entries/genres`  | Kullanıcının günlüğündeki türler + kayıt sayıları (filtre menüsü) |
+| GET    | `/api/entries/stats`   | Özet: sayılar, izlenen türler, yıllar, en yüksek puanlar       |
+| GET    | `/api/entries/export`  | Tüm günlük. `?format=json` (varsayılan) veya `csv`             |
 | POST   | `/api/entries`         | Yeni kayıt; içerik zaten varsa `409` + `details.existingEntryId` |
 | GET    | `/api/entries/:id`     | Tek kayıt                                                      |
 | PATCH  | `/api/entries/:id`     | Kısmi güncelleme; `null` göndermek alanı temizler              |
@@ -255,9 +261,13 @@ kaynağı içeriğin kendisi olur.
 
 ### Ekranlar
 
+- **Karşılama:** oturum yokken ürünün ne olduğu. Adresler: `/`, `/giris`, `/kayit`
+- **Gizlilik ve koşullar:** `/gizlilik`, `/kosullar`. İletişim adresi `CONTACT_EMAIL` ile gelir
 - **Giriş / Kayıt:** tek kartta sekmeli form; sunucudan gelen alan bazlı hatalar ilgili alanın altına yazılır
-- **Günlüğüm:** Tümü / İzlendi / İzlenecek / Favoriler sekmeleri, tür ve sıralama menüleri, metin arama, sayfalama
-- **Keşfet:** TMDb arama (400 ms debounce), haftanın öne çıkanları, detay modalı (süre, sezon, oyuncular)
+- **Günlüğüm** (`/gunluk`): Tümü / İzlendi / İzlenecek / Favoriler sekmeleri, tür ve sıralama menüleri, metin arama, sayfalama
+- **Keşfet** (`/kesfet`): TMDb arama (400 ms debounce), haftanın öne çıkanları, detay modalı (süre, sezon, oyuncular)
+- **Özet** (`/ozet`): izlenen, izlenecek, favori, ortalama puan, tür dağılımı, yıllar. Günlük JSON veya CSV indirilir
+- **Hesap silme:** şifre ve kullanıcı adı onayıyla hesap ve günlük kalkar
 - **Kayıt formu:** durum seçici, yarım yıldız puanlama (fare + klavye), izleme tarihi, not, favori
 - **Erişilebilirlik:** modalda odak tuzağı ve Esc, `aria-live` bildirimler, klavyeyle puanlama (ok tuşları), `prefers-reduced-motion` desteği
 - **XSS:** tüm metinler `textContent` ile yazılır; `innerHTML` hiç kullanılmaz (denetim betiği bunu zorunlu kılar)

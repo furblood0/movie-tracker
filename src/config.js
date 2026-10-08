@@ -145,6 +145,14 @@ export const config = {
     inviteCode,
   },
 
+  site: {
+    /**
+     * Gizlilik sayfasinda gosterilen iletisim adresi.
+     * Bos birakilirsa sayfa, basvurunun siteyi isleten kisiye yapilacagini soyler.
+     */
+    contactEmail: readValue('CONTACT_EMAIL', ''),
+  },
+
   tmdb: {
     apiKey: readValue('TMDB_API_KEY', ''),
     bearerToken: readValue('TMDB_BEARER_TOKEN', ''),

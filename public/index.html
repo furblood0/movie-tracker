@@ -3,9 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="İzlediğiniz film ve dizileri puanlayın, notlarınızı tutun." />
+    <meta name="description" content="İzlediğin film ve dizileri puanla, not tut, izleyeceklerini biriktir. Günlüğün yalnızca sana ait." />
     <meta name="color-scheme" content="dark" />
-    <title>Movie Tracker &mdash; Film &amp; Dizi Günlüğü</title>
+    <meta name="theme-color" content="#08090b" />
+    <meta property="og:title" content="Movie Tracker — Film ve dizi günlüğü" />
+    <meta property="og:description" content="İzlediğin film ve dizileri puanla, not tut, izleyeceklerini biriktir. Günlüğün yalnızca sana ait." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="tr_TR" />
+    <title>Movie Tracker &mdash; Film ve dizi günlüğü</title>
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles/main.css" />
   </head>
@@ -16,9 +21,26 @@
     -->
     <a class="skip-link" href="#view">İçeriğe geç</a>
 
+    <header class="app-bar" id="public-bar" hidden>
+      <div class="app-bar__inner">
+        <a class="brand" href="/" aria-label="Movie Tracker ana sayfa">
+          <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M5 7h22a2 2 0 0 1 2 2v3.2a3.8 3.8 0 0 0 0 7.6V23a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3.2a3.8 3.8 0 0 0 0-7.6V9a2 2 0 0 1 2-2Z"
+            />
+            <path class="brand__mark-perf" d="M21.5 10.5v11" />
+          </svg>
+          <span class="brand__text">Movie<strong>Tracker</strong></span>
+        </a>
+        <div class="app-bar__spacer"></div>
+        <a class="btn" href="/giris">Giriş</a>
+        <a class="btn btn--primary" href="/kayit" id="public-register">Kayıt ol</a>
+      </div>
+    </header>
+
     <header class="app-bar" id="app-bar" hidden>
       <div class="app-bar__inner">
-        <a class="brand" href="/" data-nav="library" aria-label="Movie Tracker ana sayfa">
+        <a class="brand" href="/gunluk" aria-label="Günlüğüm">
           <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
             <path
               d="M5 7h22a2 2 0 0 1 2 2v3.2a3.8 3.8 0 0 0 0 7.6V23a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3.2a3.8 3.8 0 0 0 0-7.6V9a2 2 0 0 1 2-2Z"
@@ -29,8 +51,9 @@
         </a>
 
         <nav class="app-nav" aria-label="Ana gezinme">
-          <button type="button" class="app-nav__link is-active" data-nav="library">Günlüğüm</button>
-          <button type="button" class="app-nav__link" data-nav="discover">Keşfet</button>
+          <a class="app-nav__link" href="/gunluk" data-nav="library">Günlüğüm</a>
+          <a class="app-nav__link" href="/kesfet" data-nav="discover">Keşfet</a>
+          <a class="app-nav__link" href="/ozet" data-nav="stats">Özet</a>
         </nav>
 
         <div class="app-bar__spacer"></div>
@@ -40,6 +63,22 @@
     </header>
 
     <main id="view" class="view" tabindex="-1"></main>
+
+    <footer class="site-footer">
+      <p>
+        Film ve dizi bilgileri
+        <a href="https://www.themoviedb.org/" rel="noopener noreferrer">TMDb</a>
+        arşivinden gelir. This product uses the TMDB API but is not endorsed or certified by TMDB.
+      </p>
+      <nav aria-label="Yasal">
+        <a href="/gizlilik">Gizlilik</a>
+        <a href="/kosullar">Kullanım koşulları</a>
+      </nav>
+    </footer>
+
+    <noscript>
+      <p class="noscript">Bu günlüğün çalışması için JavaScript gerekir.</p>
+    </noscript>
 
     <!-- Bildirimler (toast) ve modal katmani -->
     <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>

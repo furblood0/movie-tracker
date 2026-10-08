@@ -6,6 +6,7 @@
  *   POST   /api/auth/logout     cikis (oturumu veritabanindan siler)
  *   GET    /api/auth/me         mevcut oturum bilgisi
  *   POST   /api/auth/password   sifre degistirme (diger oturumlari dusurur)
+ *   DELETE /api/auth/account    hesabi ve gunlugu siler
  */
 
 import { config } from '../config.js';
@@ -28,6 +29,7 @@ import {
 } from '../services/sessions.js';
 import {
   createUser,
+  deleteUser,
   findUserByUsername,
   toPublicUser,
   updateUserPassword,
@@ -219,7 +221,11 @@ export function registerAuthRoutes(router) {
 
     // Kayit modu da buradan gider: giris ekrani "Kayit ol" sekmesini ve davet
     // kodu alanini buna gore cizer. Yalnizca MOD paylasilir, kodun kendisi asla.
-    sendJson(ctx.res, 200, { user, registration: { mode: config.registration.mode } });
+    sendJson(ctx.res, 200, {
+      user,
+      registration: { mode: config.registration.mode },
+      site: { contactEmail: config.site.contactEmail || null },
+    });
   });
 
   // ------------------------------------------------------------------
@@ -256,5 +262,43 @@ export function registerAuthRoutes(router) {
     });
 
     sendJson(ctx.res, 200, { ok: true }, sessionCookieHeader(sessionId));
+  });
+
+  // ------------------------------------------------------------------
+  // Hesap silme
+  // ------------------------------------------------------------------
+  router.delete('/api/auth/account', async (ctx) => {
+    const user = requireAuth(ctx);
+    const body = await ctx.body();
+
+    const password = requireString(body.password, 'password', { min: 1, max: 200 });
+    const confirmation = requireString(body.username, 'username', { min: 1, max: 32 });
+
+    if (confirmation.toLowerCase() !== user.username.toLowerCase()) {
+      throw new HttpError(400, 'Silmek için kullanıcı adınızı aynen yazın.', { field: 'username' });
+    }
+
+    const rateKey = `account-delete:${user.id}`;
+    const windowMs = 15 * 60 * 1000;
+    assertRateLimit(rateKey, {
+      limit: 8,
+      message: 'Çok fazla başarısız deneme. Lütfen bir süre sonra tekrar deneyin.',
+    });
+
+    const userRow = findUserByUsername(user.username);
+    const isValid = verifyPassword(password, {
+      hash: userRow.password_hash,
+      salt: userRow.password_salt,
+      algo: userRow.password_algo,
+    });
+    if (!isValid) {
+      bumpRateLimit(rateKey, windowMs);
+      throw new HttpError(401, 'Şifre hatalı.', { field: 'password' });
+    }
+
+    resetRateLimit(rateKey);
+    deleteUser(user.id);
+
+    sendEmpty(ctx.res, 204, { 'Set-Cookie': buildClearCookie(config.session.cookieName) });
   });
 }

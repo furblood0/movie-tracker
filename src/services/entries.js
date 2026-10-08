@@ -345,3 +345,112 @@ export function listUserGenres(userId) {
     count: row.count,
   }));
 }
+
+const selectSummaryStatement = db.prepare(`
+  SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'watched' THEN 1 ELSE 0 END) AS watched,
+    SUM(CASE WHEN status = 'watchlist' THEN 1 ELSE 0 END) AS watchlist,
+    SUM(CASE WHEN favorite = 1 THEN 1 ELSE 0 END) AS favorites,
+    SUM(CASE WHEN media_type = 'movie' THEN 1 ELSE 0 END) AS movies,
+    SUM(CASE WHEN media_type = 'tv' THEN 1 ELSE 0 END) AS shows,
+    SUM(CASE WHEN status = 'watched' AND media_type = 'movie' THEN 1 ELSE 0 END) AS watched_movies,
+    SUM(CASE WHEN status = 'watched' AND media_type = 'tv' THEN 1 ELSE 0 END) AS watched_shows,
+    ROUND(AVG(rating), 1) AS average_rating,
+    SUM(CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) AS rated_count
+  FROM entries
+  WHERE user_id = ?
+`);
+
+const selectWatchedGenresStatement = db.prepare(`
+  SELECT g.genre_id AS id, g.genre_name AS name, COUNT(*) AS count
+    FROM entry_genres g
+    JOIN entries e ON e.id = g.entry_id
+   WHERE e.user_id = ? AND e.status = 'watched'
+   GROUP BY g.genre_id, g.genre_name
+   ORDER BY count DESC, name ASC
+   LIMIT 8
+`);
+
+const selectYearsStatement = db.prepare(`
+  SELECT substr(watched_at, 1, 4) AS year,
+         COUNT(*) AS count,
+         ROUND(AVG(rating), 1) AS average_rating
+    FROM entries
+   WHERE user_id = ?
+     AND status = 'watched'
+     AND watched_at IS NOT NULL
+     AND length(watched_at) >= 4
+   GROUP BY year
+   ORDER BY year DESC
+`);
+
+const selectTopRatedStatement = db.prepare(`
+  SELECT * FROM entries
+   WHERE user_id = ? AND rating IS NOT NULL
+   ORDER BY rating DESC, title COLLATE NOCASE ASC
+   LIMIT 8
+`);
+
+const selectAllEntriesStatement = db.prepare(`
+  SELECT * FROM entries
+   WHERE user_id = ?
+   ORDER BY title COLLATE NOCASE ASC, id ASC
+`);
+
+/** SQLite sayaclarini duz sayiya cevirir. Bos toplam NULL gelebilir. */
+function asCount(value) {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+/** Ortalama puan: kayit yoksa null, varsa tek ondalik. */
+function asAverage(value) {
+  if (value === null || value === undefined) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+/**
+ * Gunlugun ozeti: sayilar, izlenen turler, yillar, en yuksek puanlar.
+ * Tur dagilimi yalnizca izlenen kayitlardan gelir; izleme listesi tat profilini sisirmesin.
+ * @param {number} userId
+ */
+export function journalSummary(userId) {
+  const row = selectSummaryStatement.get(userId);
+  const topRows = selectTopRatedStatement.all(userId);
+  const genresByEntry = loadGenresFor(topRows.map((entry) => entry.id));
+
+  return {
+    totals: {
+      total: asCount(row.total),
+      watched: asCount(row.watched),
+      watchlist: asCount(row.watchlist),
+      favorites: asCount(row.favorites),
+      movies: asCount(row.movies),
+      shows: asCount(row.shows),
+      watchedMovies: asCount(row.watched_movies),
+      watchedShows: asCount(row.watched_shows),
+      averageRating: asAverage(row.average_rating),
+      ratedCount: asCount(row.rated_count),
+    },
+    genres: selectWatchedGenresStatement.all(userId).map((genre) => ({
+      id: genre.id,
+      name: genre.name,
+      count: asCount(genre.count),
+    })),
+    years: selectYearsStatement.all(userId).map((year) => ({
+      year: String(year.year),
+      count: asCount(year.count),
+      averageRating: asAverage(year.average_rating),
+    })),
+    topRated: topRows.map((entry) => toApiEntry(entry, genresByEntry.get(entry.id) ?? [])),
+  };
+}
+
+/** Disa aktarma icin kullanicinin tum kayitlari (sayfalama yok). */
+export function listAllEntries(userId) {
+  const rows = selectAllEntriesStatement.all(userId);
+  const genresByEntry = loadGenresFor(rows.map((row) => row.id));
+  return rows.map((row) => toApiEntry(row, genresByEntry.get(row.id) ?? []));
+}

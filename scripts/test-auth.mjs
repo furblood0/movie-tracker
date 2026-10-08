@@ -236,6 +236,43 @@ await test('sifre degisimi diger oturumlari dusurur', async () => {
   assert.equal(meB.body.user.username, user2);
 });
 
+await test('hesap silinir ve ayni bilgilerle giris olmaz', async () => {
+  const user = createClient();
+  const name = `sil_${suffix}`;
+
+  const registered = await user.request('POST', '/api/auth/register', { username: name, password });
+  assert.equal(registered.status, 201, JSON.stringify(registered.body));
+
+  const wrongPassword = await user.request('DELETE', '/api/auth/account', {
+    username: name,
+    password: 'yanlis-sifre',
+  });
+  assert.equal(wrongPassword.status, 401);
+
+  const wrongName = await user.request('DELETE', '/api/auth/account', {
+    username: 'baskasi',
+    password,
+  });
+  assert.equal(wrongName.status, 400);
+
+  const removed = await user.request('DELETE', '/api/auth/account', { username: name, password });
+  assert.equal(removed.status, 204);
+  assert.equal(user.hasCookie('session_id'), false);
+
+  const login = await user.request('POST', '/api/auth/login', { username: name, password });
+  assert.equal(login.status, 401);
+});
+
+await test('uygulama sayfalari kabugu doner, bilinmeyen adres 404', async () => {
+  const page = await fetch(`${BASE_URL}/gizlilik`);
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /Movie Tracker/);
+
+  const missing = await fetch(`${BASE_URL}/boyle-bir-sayfa-yok`);
+  assert.equal(missing.status, 404);
+});
+
 await test('kaba kuvvet denemeleri 429 ile sinirlanir', async () => {
   const attacker = createClient();
   let sawTooMany = false;

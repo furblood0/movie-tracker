@@ -38,6 +38,9 @@ const updatePasswordStatement = db.prepare(`
    WHERE id = ?
 `);
 
+// Oturumlar, kayitlar ve turler FOREIGN KEY ... ON DELETE CASCADE ile gider.
+const deleteUserStatement = db.prepare('DELETE FROM users WHERE id = ?');
+
 /**
  * Yeni kullanici olusturur.
  * @param {{ username: string, password: string, email?: string | null, displayName?: string | null }} input
@@ -76,6 +79,16 @@ export function isEmailTaken(email) {
 /** Id'ye gore kullanicinin herkese acik alanlarini getirir. */
 export function findUserById(id) {
   return selectByIdStatement.get(id) ?? null;
+}
+
+/**
+ * Kullaniciyi ve ona bagli tum veriyi siler.
+ * foreign_keys acikken oturumlar, gunluk kayitlari ve turleri de gider.
+ * @param {number} userId
+ * @returns {boolean} Satir silindiyse true
+ */
+export function deleteUser(userId) {
+  return deleteUserStatement.run(userId).changes > 0;
 }
 
 /** Sifreyi degistirir (yeni salt ile yeniden hash'lenir). */

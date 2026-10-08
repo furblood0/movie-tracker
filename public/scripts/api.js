@@ -109,6 +109,7 @@ export const api = {
   login: (payload) => request('POST', '/api/auth/login', payload),
   logout: () => request('POST', '/api/auth/logout'),
   changePassword: (payload) => request('POST', '/api/auth/password', payload),
+  deleteAccount: (payload) => request('DELETE', '/api/auth/account', payload),
 
   // --- TMDb proxy ---
   searchTmdb: (params) => request('GET', `/api/tmdb/search${buildQuery(params)}`),
@@ -122,6 +123,7 @@ export const api = {
   createEntry: (payload) => request('POST', '/api/entries', payload),
   updateEntry: (id, payload) => request('PATCH', `/api/entries/${id}`, payload),
   deleteEntry: (id) => request('DELETE', `/api/entries/${id}`),
+  stats: () => request('GET', '/api/entries/stats'),
 
   // --- Durum ---
   health: () => request('GET', '/api/health'),

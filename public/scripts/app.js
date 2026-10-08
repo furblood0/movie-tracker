@@ -2,80 +2,148 @@
  * Uygulama onyukleyicisi.
  *
  * Sorumluluklari:
- *  - Acilista oturumu sorgular (/api/auth/me) ve dogru ekrani gosterir
- *  - Gorunumler arasi gecis (Gunlugum <-> Kesfet)
- *  - Ust bardaki kullanici menusu: sifre degistirme, cikis
+ *  - Acilista oturumu sorgular (/api/auth/me) ve adrese gore ekrani cizer
+ *  - Adres cubugu gecisleri (History API): /giris, /gunluk, /kesfet, /ozet, ...
+ *  - Ust bardaki kullanici menusu: sifre degistirme, hesap silme, cikis
  *
- * Tek sayfa uygulamasi mantigi: sayfa yenilenmez, #view icerigi degistirilir.
+ * Sayfa yenilenmez. Gercek href'ler durur; sade sol tiklamada gecis JS ile olur,
+ * boylece yeni sekmede acmak da calisir.
  */
 
 import { api, ApiError, setUnauthorizedHandler } from './api.js';
 import { createAuthView, setLoading } from './auth-view.js';
 import { clear, el } from './dom.js';
 import { createDiscoverView } from './discover-view.js';
+import { createLandingView } from './landing-view.js';
+import { createLegalView } from './legal-view.js';
 import { createLibraryView } from './library-view.js';
 import { openModal } from './modal.js';
+import { createStatsView } from './stats-view.js';
 import { showApiError, showToast } from './toast.js';
 
 const appBar = document.querySelector('#app-bar');
+const publicBar = document.querySelector('#public-bar');
+const publicRegister = document.querySelector('#public-register');
 const viewHost = document.querySelector('#view');
-const userMenuHost = document.querySelector('#user-menu');
-const navButtons = [...document.querySelectorAll('[data-nav]')];
+const navLinks = [...document.querySelectorAll('.app-nav__link')];
+
+/**
+ * Adres -> ekran. `auth` oturum ister, `guestOnly` oturum varken gunluge gider.
+ * Sunucudaki APP_PATHS listesiyle ayni yollar (kok `/` dosya olarak sunulur).
+ */
+const ROUTES = {
+  '/': { id: 'landing', guestOnly: true, title: 'Movie Tracker — Film ve dizi günlüğü' },
+  '/giris': { id: 'login', guestOnly: true, title: 'Giriş — Movie Tracker' },
+  '/kayit': { id: 'register', guestOnly: true, title: 'Kayıt — Movie Tracker' },
+  '/gizlilik': { id: 'privacy', title: 'Gizlilik — Movie Tracker' },
+  '/kosullar': { id: 'terms', title: 'Kullanım koşulları — Movie Tracker' },
+  '/gunluk': { id: 'library', auth: true, nav: 'library', title: 'Günlüğüm — Movie Tracker' },
+  '/kesfet': { id: 'discover', auth: true, nav: 'discover', title: 'Keşfet — Movie Tracker' },
+  '/ozet': { id: 'stats', auth: true, nav: 'stats', title: 'Özet — Movie Tracker' },
+};
 
 /**
  * @type {{
  *   user: object | null,
- *   route: 'library' | 'discover',
  *   libraryView: HTMLElement | null,
- *   registrationMode: 'open' | 'invite' | 'closed'
+ *   registrationMode: 'open' | 'invite' | 'closed',
+ *   contactEmail: string | null
  * }}
  */
-const state = { user: null, route: 'library', libraryView: null, registrationMode: 'open' };
+const state = {
+  user: null,
+  libraryView: null,
+  registrationMode: 'open',
+  contactEmail: null,
+};
 
-// ---------------------------------------------------------------------
-// Gorunum yonetimi
-// ---------------------------------------------------------------------
-
-/**
- * Gunluk gorunumunu dondurur.
- * Gorunum bir kez olusturulur ve sonraki gecislerde yeniden kullanilir;
- * boylece filtre secimleri sekme degistirince kaybolmaz.
- * @returns {{ element: HTMLElement, isNew: boolean }}
- */
-function getLibraryView() {
-  if (state.libraryView) return { element: state.libraryView, isNew: false };
-
-  state.libraryView = createLibraryView({
-    onNavigateDiscover: () => navigate('discover'),
-  });
-  return { element: state.libraryView, isNew: true };
+/** @param {string} pathname */
+function normalizePath(pathname) {
+  if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1);
+  return pathname || '/';
 }
 
 /**
- * Gorunum degistirir.
- * @param {'library' | 'discover'} route
+ * Oturuma gore adresi netlestirir. Gerekirse replaceState ile duzeltir.
+ * @returns {string}
  */
-function navigate(route) {
-  state.route = route;
+function resolvePath() {
+  let path = normalizePath(location.pathname);
+  const route = ROUTES[path];
+  if (!route) return path;
 
-  // Yalnizca sekme dugmeleri isaretlenir (marka baglantisi da data-nav tasir).
-  for (const button of navButtons) {
-    if (!button.classList.contains('app-nav__link')) continue;
-    button.classList.toggle('is-active', button.dataset.nav === route);
+  if (!state.user && route.auth) {
+    path = '/giris';
+    history.replaceState({}, '', path);
+  } else if (state.user && route.guestOnly) {
+    path = '/gunluk';
+    history.replaceState({}, '', path);
+  }
+  return path;
+}
+
+/**
+ * @param {string} path
+ * @param {{ replace?: boolean }} [options]
+ */
+function navigate(path, { replace = false } = {}) {
+  const next = normalizePath(path);
+  const same = next === normalizePath(location.pathname);
+  if (!same) history[replace ? 'replaceState' : 'pushState']({}, '', next);
+  render();
+}
+
+function render() {
+  const path = resolvePath();
+  const route = ROUTES[path];
+
+  document.title = route?.title ?? 'Movie Tracker';
+  appBar.hidden = !state.user;
+  publicBar.hidden = Boolean(state.user);
+  if (publicRegister) publicRegister.hidden = state.registrationMode === 'closed';
+
+  for (const link of navLinks) {
+    link.classList.toggle('is-active', link.dataset.nav === route?.nav);
   }
 
   clear(viewHost);
 
-  if (route === 'discover') {
+  if (!route) {
+    viewHost.append(createMissingView());
+    return;
+  }
+
+  if (route.id === 'landing') {
+    viewHost.append(createLandingView({ registrationMode: state.registrationMode }));
+  } else if (route.id === 'login' || route.id === 'register') {
+    viewHost.append(
+      createAuthView({
+        onAuthenticated: (user) => {
+          state.user = user;
+          renderUserMenu(user);
+          navigate('/gunluk', { replace: true });
+        },
+        registrationMode: state.registrationMode,
+        initialMode: route.id === 'register' ? 'register' : 'login',
+      }),
+    );
+  } else if (route.id === 'privacy' || route.id === 'terms') {
+    viewHost.append(
+      createLegalView({
+        kind: route.id === 'privacy' ? 'privacy' : 'terms',
+        contactEmail: state.contactEmail,
+      }),
+    );
+  } else if (route.id === 'discover') {
     viewHost.append(
       createDiscoverView({
-        // Kesfet'ten kayit eklendiginde gunluk listesi bayat kalmasin
         onEntrySaved: () => state.libraryView?.refresh?.(),
       }),
     );
+  } else if (route.id === 'stats') {
+    viewHost.append(createStatsView({ onNavigateDiscover: () => navigate('/kesfet') }));
   } else {
     const { element, isNew } = getLibraryView();
-    // Yeni olusturulan gorunum kendi ilk yuklemesini yapar; tekrar istek atmayalim.
     if (!isNew) element.refresh?.();
     viewHost.append(element);
   }
@@ -83,44 +151,63 @@ function navigate(route) {
   viewHost.focus();
 }
 
-// ---------------------------------------------------------------------
-// Kullanici menusu
-// ---------------------------------------------------------------------
+function getLibraryView() {
+  if (state.libraryView) return { element: state.libraryView, isNew: false };
+
+  state.libraryView = createLibraryView({
+    onNavigateDiscover: () => navigate('/kesfet'),
+  });
+  return { element: state.libraryView, isNew: true };
+}
+
+function createMissingView() {
+  return el(
+    'section',
+    { class: 'prose' },
+    el('h1', { class: 'page-head__title', text: 'Sayfa bulunamadı' }),
+    el('p', { text: 'Bu adres Movie Tracker’da yok.' }),
+    el('p', {}, el('a', { href: '/', text: 'Ana sayfaya dön' })),
+  );
+}
+
 function renderUserMenu(user) {
+  const userMenuHost = document.querySelector('#user-menu');
   clear(userMenuHost);
 
   const initials = (user.displayName ?? user.username).slice(0, 1).toUpperCase();
 
-  const passwordButton = el('button', {
-    type: 'button',
-    class: 'btn btn--ghost',
-    text: 'Şifre',
-    title: 'Şifre değiştir',
-    onclick: openPasswordModal,
-  });
-
-  const logoutButton = el('button', {
-    type: 'button',
-    class: 'btn',
-    text: 'Çıkış',
-    onclick: async () => {
-      try {
-        await api.logout();
-      } catch {
-        // Cikis istegi basarisiz olsa da yerel durumu temizliyoruz:
-        // kullanicinin ekranda takili kalmasi daha kotu bir deneyim olurdu.
-      }
-      showToast('Çıkış yapıldı.', 'success');
-      showAuthScreen();
-    },
-  });
-
   userMenuHost.append(
     el('span', { class: 'avatar', 'aria-hidden': 'true', text: initials }),
     el('span', { class: 'user-menu__name', title: user.username, text: user.displayName ?? user.username }),
-    passwordButton,
-    logoutButton,
+    el('button', { type: 'button', class: 'btn btn--ghost', text: 'Şifre', title: 'Şifre değiştir', onclick: openPasswordModal }),
+    el('button', {
+      type: 'button',
+      class: 'btn btn--ghost',
+      text: 'Hesabı sil',
+      onclick: openDeleteModal,
+    }),
+    el('button', {
+      type: 'button',
+      class: 'btn',
+      text: 'Çıkış',
+      onclick: async () => {
+        try {
+          await api.logout();
+        } catch {
+          // Cikis istegi basarisiz olsa da yerel durumu temizliyoruz.
+        }
+        showToast('Çıkış yapıldı.', 'success');
+        leaveApp('/');
+      },
+    }),
   );
+}
+
+/** Oturumu yerel olarak kapatip herkese acik bir sayfaya gecer. */
+function leaveApp(path) {
+  state.user = null;
+  state.libraryView = null;
+  navigate(path, { replace: true });
 }
 
 /** Sifre degistirme modali. */
@@ -137,12 +224,7 @@ function openPasswordModal() {
     subtitle: 'Değişiklikten sonra diğer cihazlardaki oturumlar kapatılır.',
     body: [
       errorBox,
-      el(
-        'div',
-        { class: 'field' },
-        el('span', { class: 'field__label', text: 'Mevcut şifre' }),
-        currentInput,
-      ),
+      el('div', { class: 'field' }, el('span', { class: 'field__label', text: 'Mevcut şifre' }), currentInput),
       el(
         'div',
         { class: 'field' },
@@ -175,61 +257,87 @@ function openPasswordModal() {
   });
 }
 
-// ---------------------------------------------------------------------
-// Ekran gecisleri
-// ---------------------------------------------------------------------
+/** Hesap silme modali. Sifre ve kullanici adi tekrar istenir. */
+function openDeleteModal() {
+  const username = state.user?.username ?? '';
+  const nameInput = el('input', { class: 'input', type: 'text', autocomplete: 'username', spellcheck: 'false' });
+  const passwordInput = el('input', { class: 'input', type: 'password', autocomplete: 'current-password' });
+  const errorBox = el('div', { class: 'form-alert', role: 'alert', hidden: true });
 
-/** Giris/kayit ekranini gosterir. */
-function showAuthScreen() {
-  state.user = null;
-  state.libraryView = null; // eski kullanicinin verisi bellekte kalmasin
-  appBar.hidden = true;
+  const cancelButton = el('button', { type: 'button', class: 'btn', text: 'Vazgeç' });
+  const deleteButton = el('button', { type: 'button', class: 'btn btn--danger', text: 'Hesabı kalıcı olarak sil' });
 
-  clear(viewHost);
-  viewHost.append(
-    createAuthView({
-      onAuthenticated: showAppScreen,
-      registrationMode: state.registrationMode,
-    }),
-  );
-}
+  const { close } = openModal({
+    title: 'Hesabı sil',
+    subtitle: 'Günlüğün, notların ve hesabın silinir. Bu işlem geri alınmaz.',
+    body: [
+      errorBox,
+      el(
+        'div',
+        { class: 'field' },
+        el('span', { class: 'field__label', text: 'Kullanıcı adın' }),
+        nameInput,
+        el('p', { class: 'field__hint', text: `Onay için ${username} yaz` }),
+      ),
+      el('div', { class: 'field' }, el('span', { class: 'field__label', text: 'Şifre' }), passwordInput),
+    ],
+    footer: [el('span'), cancelButton, deleteButton],
+  });
 
-/** Oturum acilmis kullaniciya uygulamayi gosterir. */
-function showAppScreen(user) {
-  state.user = user;
-  appBar.hidden = false;
-  renderUserMenu(user);
-  navigate('library');
-}
+  cancelButton.addEventListener('click', close);
 
-// Oturum kullanim sirasinda dusenerse (suresi doldu veya baska cihazdan
-// sifre degistirildi) kullaniciyi giris ekranina dondur.
-setUnauthorizedHandler(() => {
-  if (!state.user) return; // zaten giris ekranindayiz
-  showToast('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'warning', 6000);
-  showAuthScreen();
-});
+  deleteButton.addEventListener('click', async () => {
+    errorBox.hidden = true;
+    setLoading(deleteButton, true);
 
-// Ust bardaki gezinme dugmeleri
-for (const button of navButtons) {
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    navigate(/** @type {'library' | 'discover'} */ (button.dataset.nav));
+    try {
+      await api.deleteAccount({ username: nameInput.value.trim(), password: passwordInput.value });
+      close();
+      showToast('Hesabın ve günlüğün silindi.', 'success');
+      leaveApp('/');
+    } catch (error) {
+      setLoading(deleteButton, false);
+      errorBox.textContent = error instanceof ApiError ? error.message : 'Beklenmeyen bir hata oluştu.';
+      errorBox.hidden = false;
+    }
   });
 }
 
-// ---------------------------------------------------------------------
-// Acilis
-// ---------------------------------------------------------------------
-try {
-  const { user, registration } = await api.me();
-  // Sunucu kayit modunu buradan bildirir; giris ekrani buna gore cizilir.
-  if (registration?.mode) state.registrationMode = registration.mode;
+setUnauthorizedHandler(() => {
+  if (!state.user) return;
+  showToast('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'warning', 6000);
+  leaveApp('/giris');
+});
 
-  if (user) showAppScreen(user);
-  else showAuthScreen();
+document.addEventListener('click', (event) => {
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+  if (link.target === '_blank' || link.hasAttribute('download')) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+
+  const url = new URL(link.href, location.origin);
+  if (url.origin !== location.origin) return;
+  const path = normalizePath(url.pathname);
+  if (!ROUTES[path]) return;
+
+  event.preventDefault();
+  navigate(path);
+});
+
+window.addEventListener('popstate', () => render());
+
+try {
+  const { user, registration, site } = await api.me();
+  if (registration?.mode) state.registrationMode = registration.mode;
+  state.contactEmail = site?.contactEmail ?? null;
+
+  if (user) {
+    state.user = user;
+    renderUserMenu(user);
+  }
+  render();
 } catch (error) {
-  // Sunucuya ulasilamiyorsa kullaniciyi bilgilendirip giris ekranini goster
   showApiError(error);
-  showAuthScreen();
+  render();
 }

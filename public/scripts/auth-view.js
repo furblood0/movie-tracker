@@ -64,25 +64,34 @@ function createField({ name, label, type = 'text', autocomplete, hint, required 
  * Kimlik dogrulama ekranini olusturur.
  * @param {{
  *   onAuthenticated: (user: object) => void,
- *   registrationMode?: 'open' | 'invite' | 'closed'
+ *   registrationMode?: 'open' | 'invite' | 'closed',
+ *   initialMode?: 'login' | 'register'
  * }} options
  * @returns {HTMLElement}
  */
-export function createAuthView({ onAuthenticated, registrationMode = 'open' }) {
+export function createAuthView({ onAuthenticated, registrationMode = 'open', initialMode = 'login' }) {
   // Kayit kapaliysa sekme hic cizilmez; davet modunda ek bir alan eklenir.
   // Sunucu ayni kurallari tekrar dogrular - bu yalnizca arayuz kolayligi.
   const canRegister = registrationMode !== 'closed';
   const needsInviteCode = registrationMode === 'invite';
 
   /** @type {'login' | 'register'} */
-  let mode = 'login';
+  let mode = canRegister && initialMode === 'register' ? 'register' : 'login';
 
   const alertBox = el('div', { class: 'form-alert', role: 'alert', hidden: true });
   const formHost = el('div');
 
-  const loginTab = el('button', { type: 'button', class: 'auth__tab is-active', text: 'Giriş yap' });
+  const loginTab = el('button', {
+    type: 'button',
+    class: mode === 'login' ? 'auth__tab is-active' : 'auth__tab',
+    text: 'Giriş yap',
+  });
   const registerTab = canRegister
-    ? el('button', { type: 'button', class: 'auth__tab', text: 'Kayıt ol' })
+    ? el('button', {
+        type: 'button',
+        class: mode === 'register' ? 'auth__tab is-active' : 'auth__tab',
+        text: 'Kayıt ol',
+      })
     : null;
 
   loginTab.addEventListener('click', () => switchMode('login'));

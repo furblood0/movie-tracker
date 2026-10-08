@@ -111,9 +111,9 @@ export async function serveStatic(req, res, pathname) {
     fileStat = await statOrNull(filePath);
   }
 
-  // Not: Uygulama URL tabanli yonlendirme (History API) kullanmadigi icin
-  // "bulunamayan her yolu index.html'e dusur" davranisi YOK. Boylece
-  // /bilinmeyen/yol gibi adresler dogru sekilde 404 doner.
+  // Bilinmeyen yollar burada 404'e birakilir. Uygulama sayfalari
+  // (/giris, /gunluk, ...) server.js icindeki izin listesinden index.html
+  // olarak sunulur; bu liste disindakiler dosya degilse 404 kalir.
   if (!fileStat?.isFile()) return false;
 
   // Zayif ETag: boyut + degistirme zamani yeterince ayirt edicidir.
